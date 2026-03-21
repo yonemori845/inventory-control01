@@ -83,3 +83,4 @@ group_code,group_name,sku_code,jan_code,name_variant,color,size,quantity,reorder
 ## 参考
 
 - 変換例の数行分は `doc/sample_inventory_from_template.csv`（テンプレのコード・JANの並びを簡略化したサンプル）を参照してください。
+- **約200件のダミー在庫CSV**（色・サイズ・親商品を多様化、`MLS-101` 形式のコードと EAN-13 風 JAN）は `doc/dummy_inventory_200.csv`。再生成は `python doc/scripts/generate_dummy_inventory_200.py`。
