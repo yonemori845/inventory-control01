@@ -126,13 +126,13 @@
 
 ### チェックリスト
 
-- [ ] `/inventory`：親子表示、サマリ（グループ数・SKU 数・総在庫・アラート件数）
-- [ ] 検索（名前・商品コード・JAN）
-- [ ] 手動在庫更新 + `inventory_movements.reason = manual_adjust`
-- [ ] CSV テンプレ DL・アップロード（エラーは全件拒否推奨、機能設計 §8.3）
-- [ ] バーコード入庫（`barcode_inbound`）、数量入力または既定 1
-- [ ] `/inventory/movements`：フィルタ付き履歴一覧
-- [ ] アラート条件（`reorder_point` / `safety_stock`）を **SCR-INV-LIST（在庫画面のサマリ）** に表示（最低限）  
+- [x] `/inventory`：親子表示、サマリ（グループ数・SKU 数・総在庫・アラート件数）
+- [x] 検索（名前・商品コード・JAN）
+- [x] 手動在庫更新 + `inventory_movements.reason = manual_adjust`
+- [x] CSV テンプレ DL・アップロード（エラーは全件拒否推奨、機能設計 §8.3）
+- [x] バーコード入庫（`barcode_inbound`）、数量入力または既定 1
+- [x] `/inventory/movements`：フィルタ付き履歴一覧
+- [x] アラート条件（`reorder_point` / `safety_stock`）を **SCR-INV-LIST（在庫画面のサマリ）** に表示（最低限）  
   - **※SCR-DASH 上のアラート表示はフェーズ D**（ダッシュボード実装時）でよい。フェーズ C だけでダッシュボードを必須にしない。
 
 **中断のコツ（〜50% 付近）**：一覧・入れ子・検索・手動更新まで先に完了し、CSV／スキャンは後半、と分割可能。

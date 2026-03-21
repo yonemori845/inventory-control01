@@ -1,5 +1,64 @@
-import { PlaceholderPage } from "@/components/PlaceholderPage";
+import {
+  InventoryListClient,
+  type GroupRow,
+} from "@/components/inventory/InventoryListClient";
+import { isInventoryAlert } from "@/lib/inventory/alerts";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 
-export default function InventoryPage() {
-  return <PlaceholderPage screenId="SCR-INV-LIST" title="在庫一覧" />;
+export default async function InventoryPage() {
+  const supabase = await createServerSupabaseClient();
+
+  const { data: groups, error } = await supabase
+    .from("product_groups")
+    .select(
+      `
+      id,
+      group_code,
+      name,
+      sort_order,
+      is_active,
+      product_skus (
+        id,
+        sku_code,
+        jan_code,
+        name_variant,
+        color,
+        size,
+        quantity,
+        reorder_point,
+        safety_stock,
+        unit_price_ex_tax,
+        is_active
+      )
+    `,
+    )
+    .eq("is_active", true)
+    .order("sort_order", { ascending: true });
+
+  if (error) {
+    return (
+      <main className="p-6">
+        <p className="text-red-600">データの取得に失敗しました: {error.message}</p>
+      </main>
+    );
+  }
+
+  const list = (groups ?? []).map((g) => ({
+    ...g,
+    product_skus: (g.product_skus ?? []).filter((s) => s.is_active),
+  })) as GroupRow[];
+  const skus = list.flatMap((g) => g.product_skus ?? []);
+  const totalQty = skus.reduce((a, s) => a + s.quantity, 0);
+  const alertCount = skus.filter((s) =>
+    isInventoryAlert(s.quantity, s.reorder_point, s.safety_stock),
+  ).length;
+
+  const summary = {
+    groupCount: list.length,
+    skuCount: skus.length,
+    totalQty,
+    alertCount,
+  };
+
+  return <InventoryListClient groups={list} summary={summary} />;
 }

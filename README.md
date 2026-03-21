@@ -22,7 +22,7 @@ npm run dev
 
 1. Supabase で新規プロジェクトを作成する。
 2. **Project Settings → API** から `Project URL` と `anon` `public` キーをコピーし、`.env.local` に貼る（`.env.example` のキー名に対応）。
-3. **SQL Editor** で `supabase/migrations/` 内の SQL を**上から順に**実行するか、[Supabase CLI](https://supabase.com/docs/guides/cli) で `supabase db push` 等によりマイグレーションを適用する。
+3. **SQL Editor** で `supabase/migrations/` 内の SQL を**上から順に**実行するか、[Supabase CLI](https://supabase.com/docs/guides/cli) で `supabase db push` 等によりマイグレーションを適用する。在庫の手動更新・CSV 一括取込・JAN 入庫には **`20250321140000_inventory_rpcs.sql`**（RPC）が必要です。
 
 認証・RLS の詳細は `doc/技術仕様書.md` を参照してください。
 
