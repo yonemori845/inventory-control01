@@ -82,12 +82,12 @@
 
 ### チェックリスト
 
-- [ ] Next.js（App Router）+ TypeScript + Tailwind + ESLint 等、技術仕様 §1 に沿って初期化
-- [ ] `doc/リポジトリ構造定義書.md` の `(app)` ルートグループ案に沿って空ページを配置（ログイン除く）
-- [ ] `supabase/migrations` または同等に、論理テーブル（profiles, product_groups, product_skus, inventory_movements, orders, order_lines）の初版 SQL
-- [ ] `.env.example` を技術仕様 §5 に沿って作成（秘密は入れない）
-- [ ] Supabase プロジェクト作成手順を README に簡記（または `doc` 参照リンク）
-- [ ] （任意）Docker PostgreSQL から Supabase へ移行する場合の接続切替手順を README に1段落
+- [x] Next.js（App Router）+ TypeScript + Tailwind + ESLint 等、技術仕様 §1 に沿って初期化
+- [x] `doc/リポジトリ構造定義書.md` の `(app)` ルートグループ案に沿って空ページを配置（ログイン除く）
+- [x] `supabase/migrations` または同等に、論理テーブル（profiles, product_groups, product_skus, inventory_movements, orders, order_lines）の初版 SQL
+- [x] `.env.example` を技術仕様 §5 に沿って作成（秘密は入れない）
+- [x] Supabase プロジェクト作成手順を README に簡記（または `doc` 参照リンク）
+- [x] （任意）Docker PostgreSQL から Supabase へ移行する場合の接続切替手順を README に1段落
 
 ---
 
