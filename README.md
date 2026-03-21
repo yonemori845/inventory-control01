@@ -26,6 +26,16 @@ npm run dev
 
 認証・RLS の詳細は `doc/技術仕様書.md` を参照してください。
 
+### 認証（Google / メール）
+
+1. **Authentication → Providers** で Email（および任意で Google）を有効にする。ローカル開発ではメール確認をオフにできる（Dashboard のメールテンプレ／確認設定）。
+2. **Authentication → URL Configuration**
+   - **Site URL**: `http://localhost:3000`（本番では Vercel の URL）
+   - **Redirect URLs** に `http://localhost:3000/auth/callback` を追加（Preview 用に `https://*.vercel.app/auth/callback` を足すかは運用で決定。技術仕様書 §4.2 参照）
+3. Google を使う場合は [Google Cloud Console](https://console.cloud.google.com/) の OAuth クライアントに、Supabase が示す **callback URL** を承認リダイレクト URI として登録する。
+
+`SUPABASE_SERVICE_ROLE_KEY` は **サーバー専用**（管理者 API 等）。`NEXT_PUBLIC_*` に含めない（技術仕様書 §5・§10）。
+
 ## Docker PostgreSQL から Supabase へ切り替える場合
 
 ローカルで `DATABASE_URL` のみを使ってマイグレーションを流していた場合は、アプリの実行時は `.env.local` の `NEXT_PUBLIC_SUPABASE_*` を Supabase 側の値に差し替えればよいです。スキーマは同じマイグレーション SQL を Supabase に適用して揃えてください。

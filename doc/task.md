@@ -104,12 +104,12 @@
 
 ### チェックリスト
 
-- [ ] Supabase Auth（Google・Email）を Dashboard 設定。リダイレクト URL を技術仕様に合わせる
-- [ ] `profiles` の自動作成（トリガーまたは初回ログイン）
-- [ ] ミドルウェアまたはレイアウトでセッション検証、未認証を `/login` へ
-- [ ] `/login`（SCR-AUTH-LOGIN）UI
-- [ ] 認証後レイアウト：グローバルナビから主要ルートへリンク（プレースホルダページで可）
-- [ ] `NEXT_PUBLIC_*` と service_role の境界をコードレビュー（技術仕様 §10）
+- [x] Supabase Auth（Google・Email）を Dashboard 設定。リダイレクト URL を技術仕様に合わせる
+- [x] `profiles` の自動作成（トリガーまたは初回ログイン）
+- [x] ミドルウェアまたはレイアウトでセッション検証、未認証を `/login` へ
+- [x] `/login`（SCR-AUTH-LOGIN）UI
+- [x] 認証後レイアウト：グローバルナビから主要ルートへリンク（プレースホルダページで可）
+- [x] `NEXT_PUBLIC_*` と service_role の境界をコードレビュー（技術仕様 §10）
 
 ---
 

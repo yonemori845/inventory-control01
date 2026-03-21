@@ -1,15 +1,23 @@
-/**
- * SCR-AUTH-LOGIN — フェーズ B で Supabase Auth を接続
- */
-export default function LoginPage() {
+import { LoginForm } from "@/components/auth/LoginForm";
+
+type SearchParams = Promise<{
+  next?: string;
+  error?: string;
+}>;
+
+/** SCR-AUTH-LOGIN（デザイン設計書 §6.1） */
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}) {
+  const sp = await searchParams;
+  const nextPath =
+    sp.next && sp.next.startsWith("/") ? sp.next : "/";
+
   return (
-    <main className="flex min-h-screen items-center justify-center p-8">
-      <div className="rounded-lg border border-neutral-200 bg-white p-8 shadow-sm dark:border-neutral-800 dark:bg-neutral-950">
-        <h1 className="text-lg font-semibold">ログイン</h1>
-        <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-400">
-          プレースホルダ（フェーズ B で実装）
-        </p>
-      </div>
+    <main className="flex min-h-screen items-center justify-center bg-neutral-100 p-8 dark:bg-neutral-900">
+      <LoginForm nextPath={nextPath} authError={sp.error} />
     </main>
   );
 }
