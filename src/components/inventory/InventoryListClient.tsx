@@ -130,8 +130,8 @@ export function InventoryListClient({ groups, summary }: Props) {
   return (
     <main className="min-h-screen bg-slate-50 pb-20 dark:bg-slate-950">
       <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute -left-40 top-0 h-96 w-96 rounded-full bg-indigo-400/10 blur-3xl dark:bg-indigo-500/10" />
-        <div className="absolute -right-40 top-48 h-80 w-80 rounded-full bg-violet-400/10 blur-3xl dark:bg-violet-500/10" />
+        <div className="absolute -left-40 top-0 h-96 w-96 rounded-full bg-slate-300/20 blur-3xl dark:bg-slate-600/10" />
+        <div className="absolute -right-40 top-48 h-80 w-80 rounded-full bg-slate-400/15 blur-3xl dark:bg-slate-500/10" />
       </div>
 
       <div className="mx-auto max-w-7xl px-4 pt-8 sm:px-6 lg:px-8 lg:pt-10">
@@ -200,7 +200,7 @@ export function InventoryListClient({ groups, summary }: Props) {
                 placeholder="商品名・グループコード・SKU・JAN で検索…"
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
-                className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50/80 pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-400 transition focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-indigo-400 dark:focus:bg-slate-800"
+                className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50/80 pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-400 transition focus:border-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-400/25 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-slate-500 dark:focus:bg-slate-800"
               />
             </div>
             <div className="flex flex-wrap items-center gap-2 sm:gap-3">
@@ -215,7 +215,7 @@ export function InventoryListClient({ groups, summary }: Props) {
                 type="button"
                 onClick={() => fileRef.current?.click()}
                 disabled={pending}
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:opacity-50 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:opacity-50 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
               >
                 <IconUpload className="h-4 w-4" />
                 CSV アップロード
@@ -240,7 +240,7 @@ export function InventoryListClient({ groups, summary }: Props) {
             role="status"
             className={`mt-6 rounded-2xl border px-5 py-4 text-sm leading-relaxed shadow-sm ${
               messageTone === "success"
-                ? "border-emerald-200/80 bg-emerald-50 text-emerald-900 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-100"
+                ? "border-slate-300/90 bg-slate-100 text-slate-900 dark:border-slate-600 dark:bg-slate-800/90 dark:text-slate-100"
                 : messageTone === "error"
                   ? "border-red-200/80 bg-red-50 text-red-900 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-100"
                   : "border-slate-200 bg-slate-50 text-slate-800 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-200"
@@ -334,12 +334,36 @@ function SummaryCard({
           className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${
             warn
               ? "bg-amber-500/15 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300"
-              : "bg-indigo-500/10 text-indigo-600 dark:bg-indigo-400/15 dark:text-indigo-300"
+              : "bg-slate-200/80 text-slate-700 dark:bg-slate-700/50 dark:text-slate-200"
           }`}
         >
           {icon}
         </div>
       </div>
+    </div>
+  );
+}
+
+function ProductGroupImageSlot({ groupCode }: { groupCode: string }) {
+  return (
+    <div className="w-full">
+      <div
+        className="aspect-square w-full min-h-[5.5rem] overflow-hidden rounded-xl border-2 border-dashed border-slate-200 bg-slate-100/90 dark:border-slate-600 dark:bg-slate-800/60"
+        aria-hidden
+      >
+        <div className="flex h-full flex-col items-center justify-center gap-1.5 px-2 py-3 text-center">
+          <IconImage className="h-7 w-7 shrink-0 text-slate-400 dark:text-slate-500" />
+          <span className="text-[10px] font-semibold leading-tight text-slate-600 dark:text-slate-300">
+            商品画像
+          </span>
+          <span className="line-clamp-2 px-1 font-mono text-[9px] text-slate-400 dark:text-slate-500">
+            {groupCode}
+          </span>
+        </div>
+      </div>
+      <p className="mt-1.5 text-center text-[9px] leading-tight text-slate-400 dark:text-slate-500">
+        将来ここに画像を表示
+      </p>
     </div>
   );
 }
@@ -354,72 +378,89 @@ function GroupBlock({
   onAdjust: (skuId: string, qty: number) => void;
 }) {
   const skus = group.product_skus ?? [];
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const totalQty = skus.reduce((a, s) => a + s.quantity, 0);
+  const panelId = `inventory-group-${group.id}`;
 
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-card dark:border-slate-800/80 dark:bg-slate-900">
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center gap-4 px-5 py-4 text-left transition hover:bg-slate-50/80 dark:hover:bg-slate-800/50"
+      <div
+        className={`grid grid-cols-[minmax(7.5rem,9.5rem)_1fr_auto] gap-x-4 gap-y-0 p-4 sm:p-5 ${open ? "pb-4 sm:pb-5" : ""}`}
       >
-        <span
-          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-500 transition dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 ${
-            open ? "rotate-0" : ""
-          }`}
-        >
-          <IconChevron
-            className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`}
-          />
-        </span>
-        <div className="min-w-0 flex-1">
+        <div className={`self-start ${open ? "row-span-2" : ""}`}>
+          <ProductGroupImageSlot groupCode={group.group_code} />
+        </div>
+
+        <div className="col-start-2 row-start-1 min-w-0 self-center py-1 pr-2">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="truncate text-base font-semibold text-slate-900 dark:text-white">
+            <span className="text-base font-semibold text-slate-900 dark:text-white">
               {group.name}
             </span>
             <span className="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-xs text-slate-600 dark:bg-slate-800 dark:text-slate-300">
               {group.group_code}
             </span>
-            <span className="rounded-full bg-indigo-500/10 px-2.5 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-400/15 dark:text-indigo-300">
+            <span className="rounded-full bg-slate-200/90 px-2.5 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-700/60 dark:text-slate-200">
               {skus.length} SKU
             </span>
             <span className="text-xs text-slate-500 dark:text-slate-400">
               合計在庫{" "}
-              <span className="font-semibold tabular-nums text-slate-700 dark:text-slate-300">
+              <span className="font-semibold tabular-nums text-slate-800 dark:text-slate-200">
                 {totalQty.toLocaleString("ja-JP")}
               </span>
             </span>
           </div>
         </div>
-      </button>
-      {open ? (
-        <div className="border-t border-slate-100 dark:border-slate-800">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[760px] text-sm">
-              <thead>
-                <tr className="border-b border-slate-100 bg-slate-50/90 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-800/40 dark:text-slate-400">
-                  <th className="px-5 py-3">SKU</th>
-                  <th className="px-5 py-3">JAN</th>
-                  <th className="px-5 py-3">バリエーション</th>
-                  <th className="px-5 py-3 text-right">現在庫</th>
-                  <th className="px-5 py-3 text-right">更新</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {skus.map((s) => (
-                  <SkuEditRow
-                    key={s.id}
-                    sku={s}
-                    disabled={disabled}
-                    onSave={(qty) => onAdjust(s.id, qty)}
-                  />
-                ))}
-              </tbody>
-            </table>
-          </div>
+
+        <div className="col-start-3 row-start-1 flex shrink-0 justify-end self-start pt-0.5">
+          <button
+            type="button"
+            onClick={() => setOpen((o) => !o)}
+            aria-expanded={open}
+            aria-controls={panelId}
+            className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-600 transition hover:border-slate-300 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-slate-500 dark:hover:bg-slate-700 dark:hover:text-white"
+          >
+            <span className="sr-only">
+              {open ? "SKU 一覧を閉じる" : "SKU 一覧を開く"}
+            </span>
+            <IconChevron
+              className={`h-5 w-5 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+            />
+          </button>
         </div>
-      ) : null}
+
+        {open ? (
+          <div
+            id={panelId}
+            role="region"
+            aria-label={`${group.name} の SKU 一覧`}
+            className="col-span-2 col-start-2 row-start-2 mt-4 min-w-0 border-t border-slate-100 pt-4 dark:border-slate-800"
+          >
+            <div className="overflow-x-auto rounded-xl border border-slate-100 dark:border-slate-800">
+              <table className="w-full min-w-[760px] text-sm">
+                <thead>
+                  <tr className="border-b border-slate-100 bg-slate-50/90 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-800/40 dark:text-slate-400">
+                    <th className="px-5 py-3">SKU</th>
+                    <th className="px-5 py-3">JAN</th>
+                    <th className="px-5 py-3">バリエーション</th>
+                    <th className="px-5 py-3 text-right">現在庫</th>
+                    <th className="px-5 py-3 text-right">更新</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                  {skus.map((s) => (
+                    <SkuEditRow
+                      key={s.id}
+                      sku={s}
+                      disabled={disabled}
+                      onSave={(qty) => onAdjust(s.id, qty)}
+                    />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ) : null}
+      </div>
     </div>
   );
 }
@@ -485,7 +526,7 @@ function SkuEditRow({
           <input
             type="number"
             min={0}
-            className="h-9 w-[4.5rem] rounded-lg border border-slate-200 bg-white px-2 text-right font-mono text-sm tabular-nums text-slate-900 transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-indigo-400"
+            className="h-9 w-[4.5rem] rounded-lg border border-slate-200 bg-white px-2 text-right font-mono text-sm tabular-nums text-slate-900 transition focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-400/25 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-slate-400"
             value={val}
             onChange={(e) => setVal(e.target.value)}
           />
@@ -611,9 +652,9 @@ function BarcodeInboundPanel({
 
   return (
     <section className="mt-8 overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-card dark:border-slate-800/80 dark:bg-slate-900">
-      <div className="border-b border-slate-100 bg-gradient-to-r from-indigo-500/[0.07] to-violet-500/[0.05] px-5 py-4 dark:border-slate-800 dark:from-indigo-500/10 dark:to-violet-500/5">
+      <div className="border-b border-slate-100 bg-gradient-to-r from-slate-100/90 to-slate-50 px-5 py-4 dark:border-slate-800 dark:from-slate-800/80 dark:to-slate-900">
         <div className="flex flex-wrap items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-sm dark:bg-indigo-500">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-slate-800 text-white shadow-sm dark:border-slate-600 dark:bg-slate-700">
             <IconScan className="h-5 w-5" />
           </div>
           <div>
@@ -640,7 +681,7 @@ function BarcodeInboundPanel({
               <input
                 value={jan}
                 onChange={(e) => setJan(e.target.value)}
-                className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50/80 px-3 font-mono text-sm transition focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-600 dark:bg-slate-800/50 dark:focus:border-indigo-400 dark:focus:bg-slate-800"
+                className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50/80 px-3 font-mono text-sm transition focus:border-slate-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-400/25 dark:border-slate-600 dark:bg-slate-800/50 dark:focus:border-slate-400 dark:focus:bg-slate-800"
                 placeholder="4901234567890"
               />
             </div>
@@ -653,7 +694,7 @@ function BarcodeInboundPanel({
                 min={1}
                 value={qty}
                 onChange={(e) => setQty(e.target.value)}
-                className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50/80 px-3 text-sm tabular-nums transition focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-600 dark:bg-slate-800/50 dark:focus:border-indigo-400 dark:focus:bg-slate-800"
+                className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50/80 px-3 text-sm tabular-nums transition focus:border-slate-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-400/25 dark:border-slate-600 dark:bg-slate-800/50 dark:focus:border-slate-400 dark:focus:bg-slate-800"
               />
             </div>
           </div>
@@ -662,7 +703,7 @@ function BarcodeInboundPanel({
               type="button"
               disabled={disabled}
               onClick={() => submitInbound()}
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 disabled:opacity-50 dark:bg-emerald-500 dark:hover:bg-emerald-400"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:opacity-50 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
             >
               <IconCheck className="h-4 w-4" />
               入庫を確定
@@ -866,6 +907,26 @@ function IconHistory(props: { className?: string }) {
     >
       <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
       <path d="M3 3v5h5M12 7v5l4 2" />
+    </svg>
+  );
+}
+
+function IconImage(props: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+      {...props}
+    >
+      <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+      <circle cx="9" cy="9" r="2" />
+      <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
     </svg>
   );
 }
