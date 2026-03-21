@@ -14,6 +14,10 @@
     0 4px 12px rgba(15, 23, 42, 0.06);
   --shadow-card-hover: 0 4px 8px rgba(15, 23, 42, 0.06),
     0 12px 24px rgba(15, 23, 42, 0.08);
+  --app-canvas: #eceff3;
+  --app-canvas-dark: #080a0d;
+  --sidebar-bg: #f6f7f9;
+  --sidebar-bg-dark: #0f1218;
 }
 
 @media (prefers-color-scheme: dark) {

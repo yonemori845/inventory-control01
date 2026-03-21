@@ -120,7 +120,7 @@ export function MovementsTable({ rows, filters }: Props) {
         <button
           type="submit"
           disabled={pending}
-          className="rounded bg-neutral-900 px-3 py-2 text-sm text-white dark:bg-neutral-100 dark:text-neutral-900"
+          className="rounded border border-neutral-300 bg-white px-3 py-2 text-sm font-medium text-neutral-800 shadow-sm transition hover:bg-neutral-50 disabled:opacity-50 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:hover:bg-neutral-700"
         >
           絞り込み
         </button>
@@ -158,7 +158,16 @@ export function MovementsTable({ rows, filters }: Props) {
                       {new Date(m.created_at).toLocaleString("ja-JP")}
                     </td>
                     <td className="px-3 py-2 font-mono text-xs">
-                      {sku?.sku_code ?? "—"}
+                      {sku?.sku_code ? (
+                        <Link
+                          href={`/inventory/sku/${m.sku_id}`}
+                          className="text-neutral-800 underline-offset-2 hover:underline dark:text-neutral-200"
+                        >
+                          {sku.sku_code}
+                        </Link>
+                      ) : (
+                        "—"
+                      )}
                     </td>
                     <td className="px-3 py-2 font-mono text-xs">
                       {sku?.jan_code ?? "—"}
@@ -167,7 +176,9 @@ export function MovementsTable({ rows, filters }: Props) {
                     <td className="px-3 py-2">{label}</td>
                     <td
                       className={`px-3 py-2 text-right font-mono tabular-nums ${
-                        m.quantity_delta >= 0 ? "text-emerald-700" : "text-red-700"
+                        m.quantity_delta >= 0
+                          ? "text-slate-800 dark:text-slate-200"
+                          : "text-red-700 dark:text-red-400"
                       }`}
                     >
                       {m.quantity_delta > 0 ? "+" : ""}

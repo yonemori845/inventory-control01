@@ -14,7 +14,7 @@
 group_code,group_name,sku_code,jan_code,name_variant,color,size,quantity,reorder_point,safety_stock,unit_price_ex_tax,is_active,group_description,sort_order
 ```
 
-テンプレート付きのダウンロードは、アプリの **在庫一覧 →「CSV テンプレ DL」** から取得できます。
+テンプレート付きのダウンロードは、アプリの **在庫一覧 →「CSV ダウンロード」** から取得できます。
 
 ### 各列の意味
 
@@ -67,7 +67,7 @@ group_code,group_name,sku_code,jan_code,name_variant,color,size,quantity,reorder
 
 ## 作業手順（Calc / Excel）
 
-1. **在庫一覧で「CSV テンプレ DL」**し、1行目をコピーする。
+1. **在庫一覧で「CSV ダウンロード」**し、1行目をコピーする。
 2. `template_DB.ods` の「商品」をベースに、上表のとおり値を**列として横に並べる**（VLOOKUP / XLOOKUP で「在庫」シートから数量を引くとよい）。
 3. **`sku_code` が重複しないこと**、`jan_code` が重複しないことを確認する。
 4. **名前を付けて保存**で形式を **「テキスト CSV」**、文字コード **UTF-8**（BOM 付きでも可）を選ぶ。
