@@ -104,6 +104,10 @@ export function LoginForm({ nextPath, authError }: LoginFormProps) {
       >
         <span>Google で続ける</span>
       </button>
+      <p className="mt-2 text-xs text-neutral-500 dark:text-neutral-400">
+        Supabase の Authentication → Providers で Google を有効にし、Client ID / Secret
+        を設定してください。未設定だと JSON エラー（provider is not enabled）になります。
+      </p>
 
       <div className="my-6 flex items-center gap-3">
         <div className="h-px flex-1 bg-neutral-200 dark:bg-neutral-800" />

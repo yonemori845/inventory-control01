@@ -32,9 +32,12 @@ npm run dev
 2. **Authentication → URL Configuration**
    - **Site URL**: `http://localhost:3000`（本番では Vercel の URL）
    - **Redirect URLs** に `http://localhost:3000/auth/callback` を追加（Preview 用に `https://*.vercel.app/auth/callback` を足すかは運用で決定。技術仕様書 §4.2 参照）
-3. Google を使う場合は [Google Cloud Console](https://console.cloud.google.com/) の OAuth クライアントに、Supabase が示す **callback URL** を承認リダイレクト URI として登録する。
+3. **Google でログインする場合は必須**: **Authentication → Providers → Google** を **有効**にし、[Google Cloud Console](https://console.cloud.google.com/) で作った OAuth クライアントの **Client ID / Client Secret** を貼る。無効のまま「Google で続ける」を押すと、API が JSON で `Unsupported provider: provider is not enabled`（400）を返す。
+4. Google Cloud の OAuth クライアントに、Supabase の Google 設定画面に表示される **callback URL**（`https://<project-ref>.supabase.co/auth/v1/callback` 形式）を **承認リダイレクト URI** として登録する。
 
 `SUPABASE_SERVICE_ROLE_KEY` は **サーバー専用**（管理者 API 等）。`NEXT_PUBLIC_*` に含めない（技術仕様書 §5・§10）。
+
+**Google を設定しない場合**: Providers で Google はオフのままにし、ログイン画面では **メール／パスワード**だけ使う。
 
 ## Docker PostgreSQL から Supabase へ切り替える場合
 
