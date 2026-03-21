@@ -39,6 +39,8 @@ npm run dev
 
 **Google を設定しない場合**: Providers で Google はオフのままにし、ログイン画面では **メール／パスワード**だけ使う。
 
+`doc/template_DB.ods` を在庫 CSV にしたい場合は、**[在庫CSVとtemplate_DBの対応.md](./doc/在庫CSVとtemplate_DBの対応.md)** を参照してください（`.ods` はそのままではアップロード不可。列の対応付けが必要です）。
+
 ## Docker PostgreSQL から Supabase へ切り替える場合
 
 ローカルで `DATABASE_URL` のみを使ってマイグレーションを流していた場合は、アプリの実行時は `.env.local` の `NEXT_PUBLIC_SUPABASE_*` を Supabase 側の値に差し替えればよいです。スキーマは同じマイグレーション SQL を Supabase に適用して揃えてください。

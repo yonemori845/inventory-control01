@@ -1,0 +1,5 @@
+group_code,group_name,sku_code,jan_code,name_variant,color,size,quantity,reorder_point,safety_stock,unit_price_ex_tax,is_active,group_description,sort_order
+MLS-101,template_DB「商品」相当の親行,P-001,4595643591894,,,S,2,5,8,3500,true,,0
+MLS-101,template_DB「商品」相当の親行,P-002,4595643591900,,,M,0,5,8,3500,true,,0
+MCT-202,別の親商品（例）,P-003,4595643591917,,,S,10,5,8,2800,true,,0
+MCT-202,別の親商品（例）,P-004,4595643591924,,,M,10,5,8,2800,true,,0
