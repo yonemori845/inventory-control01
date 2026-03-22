@@ -137,29 +137,27 @@ export function InventoryListClient({ groups, summary }: Props) {
       </div>
 
       <div className="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-10 lg:pt-10">
-        <header className="border-b border-slate-200/90 pb-10 dark:border-slate-800/90">
-          <h1 className="mb-5 text-balance text-3xl font-bold tracking-tight text-slate-900 sm:text-[2.35rem] sm:leading-tight dark:text-white">
+        <header className="border-b border-slate-200/90 pb-8 dark:border-slate-800/90">
+          <p className="text-xs font-mono text-slate-500">SCR-INV-LIST</p>
+          <h1 className="mt-1 text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
             在庫一覧
           </h1>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-8">
-            <p className="min-w-0 flex-1 text-pretty text-base leading-relaxed text-slate-600 dark:text-slate-400">
-              親商品（グループ）と SKU
-              をまたいで検索し、数量をその場で更新できます。CSV
-              によるマスタ反映とバーコード入庫で、倉庫・店舗の運用に合わせた入庫フローもまとめて扱えます。
-            </p>
+          <p className="mt-2 max-w-2xl text-sm text-slate-600 dark:text-slate-400">
+            親商品（グループ）と SKU
+            をまたいで検索し、数量をその場で更新できます。CSV
+            によるマスタ反映とバーコード入庫で、倉庫・店舗の運用に合わせた入庫フローもまとめて扱えます。
+          </p>
+          <div className="mt-3">
             <Link
               href="/inventory/movements"
-              className="group inline-flex shrink-0 items-center gap-2 self-start rounded-xl border border-slate-200/90 bg-white px-4 py-2.5 text-sm font-semibold text-slate-800 shadow-sm ring-1 ring-slate-900/[0.03] transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800/90 dark:text-slate-100 dark:ring-white/[0.04] dark:hover:border-slate-600 dark:hover:bg-slate-800"
+              className="text-sm font-semibold text-slate-600 underline-offset-4 hover:underline dark:text-slate-400"
             >
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-slate-600 transition group-hover:bg-slate-200 dark:bg-slate-700/80 dark:text-slate-300 dark:group-hover:bg-slate-700">
-                <IconHistory className="h-4 w-4" />
-              </span>
               入出庫履歴を見る
             </Link>
           </div>
         </header>
 
-        <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <SummaryCard
             label="商品グループ"
             value={summary.groupCount}
@@ -971,25 +969,6 @@ function IconUpload(props: { className?: string }) {
       {...props}
     >
       <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
-    </svg>
-  );
-}
-
-function IconHistory(props: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-      {...props}
-    >
-      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-      <path d="M3 3v5h5M12 7v5l4 2" />
     </svg>
   );
 }

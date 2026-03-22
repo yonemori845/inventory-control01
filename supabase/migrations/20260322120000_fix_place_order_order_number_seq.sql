@@ -1,5 +1,5 @@
--- 注文確定（単一トランザクション）機能設計 §6.4 / 技術仕様 §4.3.1
--- 税: 行ごと 税抜小計 = round(税抜単価 * 数量, 0) → 行税額 = round(税抜小計 * 税率, 0) → ヘッダは合算（src/lib/pricing.ts と同一ルール）
+-- place_order: 注文番号サフィックスが数字でない既存行があると max(...::int) で失敗する問題を修正
+-- （例: invalid input syntax for type integer: "EC4E74"）
 
 create or replace function public.place_order(
   p_lines jsonb,
@@ -115,10 +115,9 @@ begin
     || to_char((now() at time zone 'Asia/Tokyo')::date, 'YYYYMMDD')
     || '-';
 
-  -- 同日・同一プレフィックスの並行確定で連番が重複しないようトランザクション限定ロック
   perform pg_advisory_xact_lock(885001, hashtext(v_prefix));
 
-  -- サフィックスが数字の注文だけ連番に使う（非数字は無視。::int エラー防止）
+  -- サフィックスがすべて数字の行だけ連番に使う（UUID 片など非数字の order_number は無視）
   select coalesce(max(
     case
       when substring(o.order_number from length(v_prefix) + 1) ~ '^[0-9]+$'
