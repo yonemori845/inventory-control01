@@ -4,13 +4,20 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
+    "dev:https": "next dev --turbopack --experimental-https",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@sentry/react": "^10.45.0",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.99.3",
+    "@vercel/analytics": "^2.0.1",
+    "@zxing/browser": "^0.1.5",
+    "@zxing/library": "^0.21.3",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.7",
     "next": "^15.2.4",
@@ -21,6 +28,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@playwright/test": "^1.58.2",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

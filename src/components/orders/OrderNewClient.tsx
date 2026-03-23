@@ -2,6 +2,12 @@
 
 import { placeOrderAction } from "@/app/actions/orders";
 import { resolveJanForInboundAction } from "@/app/actions/inventory";
+import { startVideoBarcodeScan } from "@/lib/barcode/video-barcode-scan";
+import {
+  explainGetUserMediaFailure,
+  getCameraPrerequisiteMessage,
+} from "@/lib/media/camera-access-help";
+import { getScanCameraStream } from "@/lib/media/scan-camera";
 import {
   DEFAULT_CONSUMPTION_TAX_RATE,
   formatYen,
@@ -26,14 +32,6 @@ type CartLine = {
   quantity: number;
 };
 
-type BarcodeDetectorCtor = new (opts: { formats: string[] }) => {
-  detect: (source: CanvasImageSource) => Promise<{ rawValue: string }[]>;
-};
-
-type BarcodeDetectorWindow = {
-  BarcodeDetector: BarcodeDetectorCtor;
-};
-
 export function OrderNewClient({ skus }: { skus: OrderSkuOption[] }) {
   const router = useRouter();
   const [lines, setLines] = useState<CartLine[]>([]);
@@ -44,7 +42,7 @@ export function OrderNewClient({ skus }: { skus: OrderSkuOption[] }) {
   const [pending, startTransition] = useTransition();
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const scanIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const scanCleanupRef = useRef<(() => void) | null>(null);
 
   const skuByJan = useMemo(() => {
     const m = new Map<string, OrderSkuOption>();
@@ -76,12 +74,12 @@ export function OrderNewClient({ skus }: { skus: OrderSkuOption[] }) {
   }, [lines]);
 
   const stopScan = useCallback(() => {
-    if (scanIntervalRef.current) {
-      clearInterval(scanIntervalRef.current);
-      scanIntervalRef.current = null;
-    }
+    scanCleanupRef.current?.();
+    scanCleanupRef.current = null;
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
+    const el = videoRef.current;
+    if (el) el.srcObject = null;
     setScanning(false);
   }, []);
 
@@ -134,48 +132,45 @@ export function OrderNewClient({ skus }: { skus: OrderSkuOption[] }) {
 
   async function startScan() {
     setMessage(null);
-    if (!("BarcodeDetector" in window)) {
-      setMessage("このブラウザではカメラスキャンに対応していません。JAN を手入力してください。");
+    const prerequisite = getCameraPrerequisiteMessage();
+    if (prerequisite) {
+      setMessage(prerequisite);
       return;
     }
+    stopScan();
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" },
-        audio: false,
-      });
+      const stream = await getScanCameraStream();
       streamRef.current = stream;
       const v = videoRef.current;
-      if (v) {
-        v.srcObject = stream;
-        await v.play();
+      if (!v) {
+        stream.getTracks().forEach((t) => t.stop());
+        streamRef.current = null;
+        setMessage(
+          "カメラ要素の準備に失敗しました。ページを再読み込みしてお試しください。",
+        );
+        return;
       }
+      v.srcObject = stream;
+      await v.play();
       setScanning(true);
-      const BD = (window as unknown as BarcodeDetectorWindow).BarcodeDetector;
-      const detector = new BD({
-        formats: [
+      const cleanup = await startVideoBarcodeScan({
+        videoElement: v,
+        preferNative: true,
+        nativeFormats: [
           "ean_13",
           "ean_8",
           "code_128",
           "code_39",
           "qr_code",
         ],
+        onDecode: (text) => {
+          stopScan();
+          void onResolveJan(text);
+        },
       });
-      scanIntervalRef.current = setInterval(async () => {
-        const el = videoRef.current;
-        if (!el || el.readyState < 2) return;
-        try {
-          const codes = await detector.detect(el);
-          if (codes.length > 0) {
-            const v0 = codes[0].rawValue;
-            stopScan();
-            void onResolveJan(v0);
-          }
-        } catch {
-          /* ignore frame errors */
-        }
-      }, 400);
-    } catch {
-      setMessage("カメラを起動できませんでした。権限を確認するか、手入力してください。");
+      scanCleanupRef.current = cleanup;
+    } catch (e) {
+      setMessage(explainGetUserMediaFailure(e));
     }
   }
 
@@ -249,14 +244,14 @@ export function OrderNewClient({ skus }: { skus: OrderSkuOption[] }) {
               {scanning ? "スキャン停止" : "カメラスキャン"}
             </button>
           </div>
-          {scanning ? (
-            <video
-              ref={videoRef}
-              className="mt-4 aspect-video w-full max-w-md rounded-lg bg-black object-cover"
-              muted
-              playsInline
-            />
-          ) : null}
+          <video
+            ref={videoRef}
+            className={`mt-4 aspect-video w-full max-w-md rounded-lg bg-black object-cover ${
+              scanning ? "" : "hidden"
+            }`}
+            muted
+            playsInline
+          />
           <div className="mt-6">
             <input
               type="search"
@@ -372,9 +367,9 @@ export function OrderNewClient({ skus }: { skus: OrderSkuOption[] }) {
             </div>
           </dl>
           {message ? (
-            <p className="mt-4 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:bg-amber-950/40 dark:text-amber-100">
+            <pre className="mt-4 max-h-64 overflow-y-auto rounded-lg bg-amber-50 px-3 py-2 text-left text-xs leading-relaxed text-amber-900 whitespace-pre-wrap break-words font-sans dark:bg-amber-950/40 dark:text-amber-100">
               {message}
-            </p>
+            </pre>
           ) : null}
           <button
             type="button"

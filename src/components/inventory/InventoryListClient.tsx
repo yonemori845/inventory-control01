@@ -11,6 +11,12 @@ import {
   isInventoryAlert,
   recommendedOrderQty,
 } from "@/lib/inventory/alerts";
+import { startVideoBarcodeScan } from "@/lib/barcode/video-barcode-scan";
+import {
+  explainGetUserMediaFailure,
+  getCameraPrerequisiteMessage,
+} from "@/lib/media/camera-access-help";
+import { getScanCameraStream } from "@/lib/media/scan-camera";
 import Link from "next/link";
 import type { MouseEvent, ReactNode } from "react";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
@@ -586,15 +592,13 @@ function BarcodeInboundPanel({
   const [scanning, setScanning] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const scanIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const scanCleanupRef = useRef<(() => void) | null>(null);
   const activeRef = useRef(false);
 
   async function stopCamera() {
     activeRef.current = false;
-    if (scanIntervalRef.current) {
-      clearInterval(scanIntervalRef.current);
-      scanIntervalRef.current = null;
-    }
+    scanCleanupRef.current?.();
+    scanCleanupRef.current = null;
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
     setScanning(false);
@@ -604,54 +608,52 @@ function BarcodeInboundPanel({
 
   async function startScan() {
     onResult(null);
-    if (!("BarcodeDetector" in window)) {
-      onResult(
-        "このブラウザはカメラスキャンに未対応です。JAN を手入力してください。",
-        "info",
-      );
+    const prerequisite = getCameraPrerequisiteMessage();
+    if (prerequisite) {
+      onResult(prerequisite, "error");
       return;
     }
     await stopCamera();
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" },
-        audio: false,
-      });
+      const stream = await getScanCameraStream();
       streamRef.current = stream;
       const v = videoRef.current;
-      if (v) {
-        v.srcObject = stream;
-        await v.play();
+      if (!v) {
+        stream.getTracks().forEach((t) => t.stop());
+        streamRef.current = null;
+        onResult("カメラプレビューの準備に失敗しました。", "error");
+        return;
       }
+      v.srcObject = stream;
+      await v.play();
       setScanning(true);
       activeRef.current = true;
-      const BD = (window as unknown as BarcodeDetectorWindow).BarcodeDetector;
-      const detector = new BD({
-        formats: ["ean_13", "ean_8", "code_128", "itf", "upc_a", "upc_e"],
+      const cleanup = await startVideoBarcodeScan({
+        videoElement: v,
+        preferNative: true,
+        nativeFormats: [
+          "ean_13",
+          "ean_8",
+          "code_128",
+          "code_39",
+          "itf",
+          "upc_a",
+          "upc_e",
+          "qr_code",
+        ],
+        onDecode: (text) => {
+          if (!activeRef.current) return;
+          setJan(text);
+          onResult(
+            "JAN を読み取りました。数量を確認して入庫してください。",
+            "success",
+          );
+          void stopCamera();
+        },
       });
-      scanIntervalRef.current = setInterval(() => {
-        void (async () => {
-          if (!activeRef.current || !videoRef.current) return;
-          try {
-            const codes = await detector.detect(videoRef.current);
-            if (codes.length > 0) {
-              setJan(codes[0].rawValue);
-              onResult(
-                "JAN を読み取りました。数量を確認して入庫してください。",
-                "success",
-              );
-              await stopCamera();
-            }
-          } catch {
-            /* ignore */
-          }
-        })();
-      }, 300);
-    } catch {
-      onResult(
-        "カメラを起動できませんでした。ブラウザの権限と HTTPS / localhost を確認してください。",
-        "error",
-      );
+      scanCleanupRef.current = cleanup;
+    } catch (e) {
+      onResult(explainGetUserMediaFailure(e), "error");
     }
   }
 
@@ -834,12 +836,6 @@ function BarcodeInboundPanel({
     </section>
   );
 }
-
-type BarcodeDetectorWindow = {
-  BarcodeDetector: new (opts: { formats: string[] }) => {
-    detect: (source: HTMLVideoElement) => Promise<{ rawValue: string }[]>; 
-  };
-};
 
 function IconSearch(props: { className?: string }) {
   return (

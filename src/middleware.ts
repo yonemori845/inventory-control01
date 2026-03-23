@@ -6,7 +6,10 @@ function isPublicPath(pathname: string) {
     pathname === "/login" ||
     pathname.startsWith("/auth/") ||
     pathname.startsWith("/_next") ||
-    pathname === "/favicon.ico"
+    pathname === "/favicon.ico" ||
+    pathname === "/manifest.webmanifest" ||
+    pathname === "/sw.js" ||
+    pathname === "/offline.html"
   );
 }
 
