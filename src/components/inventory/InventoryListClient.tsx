@@ -208,11 +208,18 @@ export function InventoryListClient({ groups, summary }: Props) {
             </div>
             <div className="flex flex-wrap items-center gap-2 sm:gap-3">
               <a
-                href="/api/inventory/csv-template"
+                href="/api/inventory/csv-export"
+                title="アクティブなグループ・SKU の現在値を、取込と同じ列形式で出力します（UTF-8）。"
                 className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-slate-500 dark:hover:bg-slate-700"
               >
                 <IconDownload className="h-4 w-4" />
-                CSV ダウンロード
+                CSV エクスポート
+              </a>
+              <a
+                href="/api/inventory/csv-template"
+                className="text-xs font-medium text-slate-500 underline-offset-4 hover:text-slate-700 hover:underline dark:text-slate-400 dark:hover:text-slate-200"
+              >
+                テンプレート（サンプル行）
               </a>
               <button
                 type="button"
@@ -285,8 +292,7 @@ export function InventoryListClient({ groups, summary }: Props) {
                   表示できる商品がありません
                 </p>
                 <p className="mt-2 max-w-md text-sm text-slate-500 dark:text-slate-400">
-                  検索条件を変えるか、上部の「CSV
-                  ダウンロード」でフォーマットを取得してから取り込んでください。
+                  検索条件を変えるか、上部の「テンプレート（サンプル行）」で形式を確認してから取り込んでください。
                 </p>
               </div>
             ) : (

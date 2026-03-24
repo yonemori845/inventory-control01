@@ -7,7 +7,8 @@ const SAMPLE = [
 ].join("\n");
 
 export async function GET() {
-  const body = `${INVENTORY_CSV_HEADER}\n${SAMPLE}\n`;
+  // UTF-8 BOM（Excel で文字化け・1列化しにくくする）
+  const body = `\uFEFF${INVENTORY_CSV_HEADER}\n${SAMPLE}\n`;
   return new NextResponse(body, {
     status: 200,
     headers: {
