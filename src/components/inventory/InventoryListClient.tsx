@@ -8,6 +8,8 @@ import {
 } from "@/app/actions/inventory";
 import { parseInventoryCsv, rowsToJsonForRpc } from "@/lib/inventory/csv";
 import {
+  getInventoryAlertLevel,
+  inventoryAlertBadgeClass,
   isInventoryAlert,
   recommendedOrderQty,
 } from "@/lib/inventory/alerts";
@@ -493,6 +495,11 @@ function SkuEditRow({
     sku.reorder_point,
     sku.safety_stock,
   );
+  const alertLevel = getInventoryAlertLevel(
+    sku.quantity,
+    sku.reorder_point,
+    sku.safety_stock,
+  );
   const rec = recommendedOrderQty(sku.quantity, sku.safety_stock);
   const inactive = !sku.is_active;
   const router = useRouter();
@@ -534,9 +541,9 @@ function SkuEditRow({
               " · ",
             ) || "—"}
           </span>
-          {alert ? (
-            <span className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-amber-200/80 bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-900 dark:border-amber-800/60 dark:bg-amber-950/50 dark:text-amber-200">
-              <IconAlert className="h-3 w-3 shrink-0" />
+          {alert && alertLevel ? (
+            <span className={inventoryAlertBadgeClass(alertLevel)}>
+              <IconAlert className="h-3 w-3 shrink-0 opacity-80" />
               アラート
               {rec > 0 ? ` · 推奨 ${rec}` : ""}
             </span>

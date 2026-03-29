@@ -1,4 +1,8 @@
 import {
+  getInventoryAlertLevel,
+  inventoryAlertBannerClass,
+} from "@/lib/inventory/alerts";
+import {
   formatYen,
   priceIncTax,
 } from "@/lib/pricing";
@@ -50,12 +54,10 @@ function groupOf(row: SkuDetailRow): GroupEmbed | null {
 export function SkuDetailView({
   row,
   lastInboundAt,
-  alert,
   rec,
 }: {
   row: SkuDetailRow;
   lastInboundAt: string | null;
-  alert: boolean;
   rec: number;
 }) {
   const group = groupOf(row);
@@ -72,23 +74,30 @@ export function SkuDetailView({
         day: "numeric",
       })
     : "—";
+  const alertLevel = getInventoryAlertLevel(
+    row.quantity,
+    row.reorder_point,
+    row.safety_stock,
+  );
   const stockStatus =
     row.quantity <= 0
       ? {
           label: "在庫切れ",
           className:
-            "bg-[var(--surface-muted)] text-[var(--foreground)] ring-1 ring-[var(--border)]",
+            "border border-red-200/70 bg-red-50 text-red-900 ring-1 ring-red-900/10 dark:border-red-900/45 dark:bg-red-950/35 dark:text-red-100 dark:ring-red-500/12",
         }
-      : alert
+      : alertLevel
         ? {
             label: "要補充",
             className:
-              "bg-[var(--surface-muted)] text-[var(--foreground)] ring-1 ring-[var(--border-strong)]",
+              alertLevel === "below_safety"
+                ? "border border-amber-200/75 bg-amber-50 text-amber-950 ring-1 ring-amber-900/10 dark:border-amber-800/50 dark:bg-amber-950/35 dark:text-amber-100 dark:ring-amber-500/10"
+                : "border border-amber-200/55 bg-amber-50/85 text-amber-950 ring-1 ring-amber-900/8 dark:border-amber-800/40 dark:bg-amber-950/25 dark:text-amber-100 dark:ring-amber-500/8",
           }
         : {
             label: "在庫あり",
             className:
-              "bg-[var(--surface-muted)] text-neutral-600 ring-1 ring-[var(--border)] dark:text-neutral-300",
+              "border border-[var(--border)] bg-[var(--surface-muted)] text-neutral-600 ring-1 ring-[var(--border)] dark:text-neutral-300",
           };
 
   return (
@@ -116,9 +125,17 @@ export function SkuDetailView({
         </header>
 
         <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-card">
-          {alert ? (
-            <div className="border-b border-[var(--border)] bg-[var(--surface-muted)] px-5 py-4 sm:px-6">
-              <p className="text-sm font-medium text-[var(--foreground)]">
+          {alertLevel ? (
+            <div
+              className={`px-5 py-4 sm:px-6 ${inventoryAlertBannerClass(alertLevel)}`}
+            >
+              <p
+                className={
+                  alertLevel === "stockout"
+                    ? "text-sm font-medium text-red-950 dark:text-red-100"
+                    : "text-sm font-medium text-amber-950 dark:text-amber-100"
+                }
+              >
                 在庫アラート（発注点または安全在庫を下回っています）
                 {rec > 0 ? ` · 推奨発注 ${rec}` : ""}
               </p>

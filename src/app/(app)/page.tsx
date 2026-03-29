@@ -1,8 +1,13 @@
 import { DashboardAnchorNav } from "@/components/dashboard/DashboardAnchorNav";
-import { DashboardPeriodNav } from "@/components/dashboard/DashboardPeriodNav";
+import { DashboardPeriodPresets } from "@/components/dashboard/DashboardPeriodNav";
 import { SalesChart, type DailyPoint } from "@/components/dashboard/SalesChart";
 import { AppPageMain } from "@/components/layout/app-page";
-import { isInventoryAlert } from "@/lib/inventory/alerts";
+import {
+  getInventoryAlertLevel,
+  inventoryAlertListItemSurfaceClass,
+  inventoryAlertSectionShellClass,
+  isInventoryAlert,
+} from "@/lib/inventory/alerts";
 import { formatYen } from "@/lib/pricing";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import {
@@ -162,6 +167,8 @@ export default async function DashboardPage({
     sku_code: string;
     group_name: string;
     quantity: number;
+    reorder_point: number;
+    safety_stock: number;
   }[] = [];
   for (const g of groups ?? []) {
     for (const s of (g.product_skus ?? []).filter((x) => x.is_active)) {
@@ -170,11 +177,20 @@ export default async function DashboardPage({
           sku_code: s.sku_code,
           group_name: g.name,
           quantity: s.quantity,
+          reorder_point: s.reorder_point,
+          safety_stock: s.safety_stock,
         });
       }
     }
   }
   const alerts = alertRows.slice(0, 12);
+
+  const alertTone = {
+    hasStockout: alertRows.some((r) => r.quantity === 0),
+    hasBelowSafety: alertRows.some(
+      (r) => r.quantity > 0 && r.quantity < r.safety_stock,
+    ),
+  };
 
   return (
     <AppPageMain>
@@ -202,43 +218,38 @@ export default async function DashboardPage({
           </Link>
       </header>
 
-      <div className="mt-6">
-        <DashboardPeriodNav from={from} to={to} />
-      </div>
-
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <KpiCard
-            label="期間売上（税込）"
-            value={formatYen(sumInc)}
-            trend={revenueTrend}
-            caption="期間内の税込合計"
-            foot="粗利・原価はレポートで確認できます"
-          />
-          <KpiCard
-            label="期間注文数"
-            value={`${orderCount} 件`}
-            trend={ordersTrend}
-            caption="成立した注文の件数"
-            foot="キャンセルは別集計です"
-          />
-          <KpiCard
-            label="平均注文額（税込）"
-            value={formatYen(avgOrder)}
-            trend={avgTrend}
-            caption="税込合計 ÷ 注文数"
-            foot="単価帯の偏りに注意"
-          />
-          <KpiCard
-            label="在庫アラート SKU"
-            value={`${alertRows.length} 件`}
-            caption="発注点または安全在庫を下回る SKU"
-            foot={
-              alertRows.length > 0
-                ? "補充・棚卸の優先度を調整してください"
-                : "現時点で閾値逸脱はありません"
-            }
-            emphasize={alertRows.length > 0}
-          />
+        <KpiCard
+          label="期間売上（税込）"
+          value={formatYen(sumInc)}
+          trend={revenueTrend}
+          caption="期間内の税込合計"
+          foot="粗利・原価はレポートで確認できます"
+        />
+        <KpiCard
+          label="期間注文数"
+          value={`${orderCount} 件`}
+          trend={ordersTrend}
+          caption="成立した注文の件数"
+          foot="キャンセルは別集計です"
+        />
+        <KpiCard
+          label="平均注文額（税込）"
+          value={formatYen(avgOrder)}
+          trend={avgTrend}
+          caption="税込合計 ÷ 注文数"
+          foot="単価帯の偏りに注意"
+        />
+        <KpiCard
+          label="在庫アラート SKU"
+          value={`${alertRows.length} 件`}
+          caption="発注点または安全在庫を下回る SKU"
+          foot={
+            alertRows.length > 0
+              ? "補充・棚卸の優先度を調整してください"
+              : "現時点で閾値逸脱はありません"
+          }
+        />
       </div>
 
       <div className="mt-8 grid gap-5 lg:grid-cols-2">
@@ -246,14 +257,17 @@ export default async function DashboardPage({
             id="section-chart"
             className="scroll-mt-28 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-card lg:col-span-2"
           >
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-              <div>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+              <div className="min-w-0">
                 <h2 className="text-base font-semibold text-[var(--foreground)]">
                   売上推移
                 </h2>
                 <p className="mt-1 text-sm text-neutral-500">
                   税込・日次の合計（線は滑らかに補間しています）
                 </p>
+              </div>
+              <div className="shrink-0 sm:pt-0.5">
+                <DashboardPeriodPresets from={from} to={to} />
               </div>
             </div>
             <div className="mt-5">
@@ -290,25 +304,47 @@ export default async function DashboardPage({
                       </td>
                     </tr>
                   ) : (
-                    top10.map((r, i) => (
-                      <tr
-                        key={r.sku_code}
-                        className="border-b border-[var(--border)]/70 last:border-0"
-                      >
-                        <td className="py-2.5 pr-3 tabular-nums text-neutral-400">
-                          {i + 1}
-                        </td>
-                        <td className="py-2.5 pr-3 font-mono text-xs text-[var(--foreground)]">
-                          {r.sku_code}
-                        </td>
-                        <td className="py-2.5 pr-3 text-right tabular-nums text-neutral-600 dark:text-neutral-300">
-                          {r.qty}
-                        </td>
-                        <td className="py-2.5 text-right font-medium tabular-nums text-[var(--foreground)]">
-                          {formatYen(Math.round(r.revenueEx))}
-                        </td>
-                      </tr>
-                    ))
+                    top10.map((r, i) => {
+                      const rank = i + 1;
+                      return (
+                        <tr
+                          key={r.sku_code}
+                          className={rankingPodiumRowClass(rank)}
+                        >
+                          <td className={rankingRankCellClass(rank)}>
+                            <RankingRankBadge rank={rank} />
+                          </td>
+                          <td
+                            className={[
+                              "py-2.5 pr-3 font-mono text-xs text-[var(--foreground)]",
+                              rank === 1 ? "font-semibold" : "",
+                            ].join(" ")}
+                          >
+                            {r.sku_code}
+                          </td>
+                          <td
+                            className={[
+                              "py-2.5 pr-3 text-right tabular-nums text-neutral-600 dark:text-neutral-300",
+                              rank <= 3 ? "font-medium text-neutral-700 dark:text-neutral-200" : "",
+                            ].join(" ")}
+                          >
+                            {r.qty}
+                          </td>
+                          <td
+                            className={[
+                              "py-2.5 text-right tabular-nums text-[var(--foreground)]",
+                              rank === 1
+                                ? "text-base font-semibold tracking-tight"
+                                : rank <= 3
+                                  ? "font-semibold"
+                                  : "font-medium",
+                            ].join(" ")}
+                          >
+                            {formatYen(Math.round(r.revenueEx))}
+                          </td>
+                        </tr>
+                      );
+                    })
                   )}
                 </tbody>
               </table>
@@ -317,7 +353,10 @@ export default async function DashboardPage({
 
           <section
             id="section-alerts"
-            className="scroll-mt-28 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-card"
+            className={[
+              "scroll-mt-28 rounded-2xl bg-[var(--surface)] p-5 shadow-card",
+              inventoryAlertSectionShellClass(alertTone, alerts.length > 0),
+            ].join(" ")}
           >
             <div className="flex items-start justify-between gap-2">
               <div>
@@ -339,19 +378,29 @@ export default async function DashboardPage({
                   アラートはありません
                 </li>
               ) : (
-                alerts.map((a) => (
+                alerts.map((a) => {
+                  const lvl = getInventoryAlertLevel(
+                    a.quantity,
+                    a.reorder_point,
+                    a.safety_stock,
+                  )!;
+                  return (
                   <li
                     key={a.sku_code}
-                    className="flex flex-wrap items-baseline justify-between gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] px-3.5 py-2.5"
+                    className={[
+                      "flex flex-wrap items-baseline justify-between gap-2 px-3.5 py-2.5",
+                      inventoryAlertListItemSurfaceClass(lvl),
+                    ].join(" ")}
                   >
                     <span className="font-mono text-xs font-medium text-[var(--foreground)]">
                       {a.sku_code}
                     </span>
-                    <span className="text-xs text-neutral-500">
+                    <span className="text-xs text-neutral-600 dark:text-neutral-400">
                       {a.group_name} · 在庫 {a.quantity}
                     </span>
                   </li>
-                ))
+                  );
+                })
               )}
             </ul>
           </section>
@@ -374,13 +423,95 @@ export default async function DashboardPage({
   );
 }
 
+/** 売上ランキング 1〜3位の行背景（モノクロ・階調） */
+function rankingPodiumRowClass(rank: number): string {
+  const base =
+    "border-b border-[var(--border)]/70 last:border-0 transition-[background-color] duration-150";
+  if (rank === 1) {
+    return [
+      base,
+      "bg-gradient-to-r from-neutral-200/90 via-neutral-100/70 to-[var(--surface)]",
+      "dark:from-white/[0.09] dark:via-white/[0.045] dark:to-[var(--surface)]",
+    ].join(" ");
+  }
+  if (rank === 2) {
+    return [
+      base,
+      "bg-gradient-to-r from-neutral-100/80 via-neutral-50/80 to-[var(--surface)]",
+      "dark:from-white/[0.05] dark:via-white/[0.02] dark:to-[var(--surface)]",
+    ].join(" ");
+  }
+  if (rank === 3) {
+    return [
+      base,
+      "bg-gradient-to-r from-neutral-100/50 via-[var(--surface-muted)]/90 to-[var(--surface)]",
+      "dark:from-white/[0.035] dark:via-white/[0.015] dark:to-[var(--surface)]",
+    ].join(" ");
+  }
+  return base;
+}
+
+function rankingRankCellClass(rank: number): string {
+  if (rank <= 3) {
+    const stripe =
+      rank === 1
+        ? "before:bg-neutral-900 dark:before:bg-neutral-100"
+        : rank === 2
+          ? "before:bg-neutral-500 dark:before:bg-neutral-400"
+          : "before:bg-neutral-400 dark:before:bg-neutral-500";
+    return [
+      "relative py-2.5 pr-3 pl-4 align-middle",
+      "before:absolute before:left-0 before:top-2.5 before:bottom-2.5 before:w-[3px] before:rounded-full",
+      stripe,
+    ].join(" ");
+  }
+  return "py-2.5 pr-3 align-middle";
+}
+
+function RankingRankBadge({ rank }: { rank: number }) {
+  if (rank === 1) {
+    return (
+      <span
+        className="inline-flex h-7 min-w-[1.75rem] items-center justify-center rounded-full bg-neutral-900 px-2.5 text-xs font-bold tabular-nums tracking-tight text-white shadow-sm ring-1 ring-black/8 dark:bg-white dark:text-neutral-900 dark:ring-white/15"
+        aria-label="1位"
+      >
+        1
+      </span>
+    );
+  }
+  if (rank === 2) {
+    return (
+      <span
+        className="inline-flex h-7 min-w-[1.75rem] items-center justify-center rounded-full bg-neutral-300/90 px-2.5 text-xs font-bold tabular-nums tracking-tight text-neutral-900 shadow-sm ring-1 ring-neutral-400/50 dark:bg-neutral-500 dark:text-white dark:ring-neutral-400/30"
+        aria-label="2位"
+      >
+        2
+      </span>
+    );
+  }
+  if (rank === 3) {
+    return (
+      <span
+        className="inline-flex h-7 min-w-[1.75rem] items-center justify-center rounded-full border border-neutral-300/90 bg-neutral-100 px-2.5 text-xs font-bold tabular-nums tracking-tight text-neutral-800 dark:border-neutral-600 dark:bg-neutral-700/90 dark:text-neutral-100"
+        aria-label="3位"
+      >
+        3
+      </span>
+    );
+  }
+  return (
+    <span className="tabular-nums text-neutral-400" aria-label={`${rank}位`}>
+      {rank}
+    </span>
+  );
+}
+
 function KpiCard({
   label,
   value,
   trend,
   caption,
   foot,
-  emphasize,
 }: {
   label: string;
   value: string;
@@ -391,17 +522,9 @@ function KpiCard({
   } | null;
   caption?: string;
   foot?: string;
-  emphasize?: boolean;
 }) {
   return (
-    <div
-      className={[
-        "rounded-2xl border bg-[var(--surface)] p-4 shadow-card sm:p-5",
-        emphasize
-          ? "border-[var(--border-strong)] ring-1 ring-black/[0.04] dark:ring-white/[0.06]"
-          : "border-[var(--border)]",
-      ].join(" ")}
-    >
+    <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-card sm:p-5">
       <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-neutral-400">
         {label}
       </p>

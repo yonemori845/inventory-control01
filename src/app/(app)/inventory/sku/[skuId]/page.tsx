@@ -1,7 +1,4 @@
-import {
-  isInventoryAlert,
-  recommendedOrderQty,
-} from "@/lib/inventory/alerts";
+import { recommendedOrderQty } from "@/lib/inventory/alerts";
 import {
   SkuDetailView,
   type SkuDetailRow,
@@ -59,11 +56,6 @@ export default async function InventorySkuDetailPage({
 
   const lastInboundAt = moveRes.data?.created_at ?? null;
 
-  const alert = isInventoryAlert(
-    row.quantity,
-    row.reorder_point,
-    row.safety_stock,
-  );
   const rec = recommendedOrderQty(row.quantity, row.safety_stock);
 
   return (
@@ -71,7 +63,6 @@ export default async function InventorySkuDetailPage({
       <SkuDetailView
         row={row}
         lastInboundAt={lastInboundAt}
-        alert={alert}
         rec={rec}
       />
     </AppPageMain>
