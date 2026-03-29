@@ -51,30 +51,30 @@ export function CameraTestPanel() {
   }, []);
 
   return (
-    <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-card dark:border-slate-800/80 dark:bg-slate-900">
-      <h2 className="text-base font-semibold text-slate-900 dark:text-white">
+    <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-card sm:p-5">
+      <h2 className="text-base font-semibold text-[var(--foreground)]">
         カメラ（ブラウザ）の確認
       </h2>
-      <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+      <p className="mt-1 text-sm leading-snug text-neutral-600 dark:text-neutral-400">
         Zoom など<strong>アプリ</strong>のカメラとは別経路です。ここで失敗する場合は、下の「Windows
         / Chrome での確認」を試してください。
       </p>
 
       <div className="mt-4 space-y-3 text-sm">
         <div>
-          <p className="text-slate-500">いま開いている元（origin）</p>
-          <p className="mt-0.5 font-mono text-xs text-slate-800 dark:text-slate-200">
+          <p className="text-neutral-500">いま開いている元（origin）</p>
+          <p className="mt-0.5 font-mono text-xs text-neutral-800 dark:text-neutral-200">
             {browserInfo?.origin ?? "…"}
           </p>
         </div>
         <div>
-          <p className="text-slate-500">セキュアコンテキスト</p>
+          <p className="text-neutral-500">セキュアコンテキスト</p>
           <p className="mt-0.5">
             {browserInfo ? (
               <span
                 className={
                   browserInfo.secure
-                    ? "font-semibold text-emerald-700 dark:text-emerald-400"
+                    ? "font-semibold text-neutral-800 dark:text-neutral-200"
                     : "font-semibold text-red-600 dark:text-red-400"
                 }
               >
@@ -83,7 +83,7 @@ export function CameraTestPanel() {
                   : "いいえ（カメラがブロックされやすい）"}
               </span>
             ) : (
-              <span className="text-slate-400">…</span>
+              <span className="text-neutral-400">…</span>
             )}
           </p>
         </div>
@@ -93,7 +93,7 @@ export function CameraTestPanel() {
         type="button"
         disabled={busy}
         onClick={() => void runTest()}
-        className="mt-4 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-60 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
+        className="mt-4 rounded-full bg-neutral-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-neutral-800 disabled:opacity-60 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-200"
       >
         {busy ? "テスト中…" : "カメラをテスト（取得してすぐ停止）"}
       </button>
@@ -103,7 +103,7 @@ export function CameraTestPanel() {
           className={[
             "mt-4 max-h-72 overflow-y-auto whitespace-pre-wrap break-words rounded-lg border px-3 py-2 text-xs leading-relaxed font-sans",
             ok === true
-              ? "border-emerald-200 bg-emerald-50 text-emerald-950 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-100"
+              ? "border-[var(--border)] bg-[var(--surface-muted)] text-[var(--foreground)]"
               : "border-red-200 bg-red-50 text-red-950 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-100",
           ].join(" ")}
           role="status"
@@ -112,8 +112,8 @@ export function CameraTestPanel() {
         </pre>
       ) : null}
 
-      <div className="mt-6 border-t border-slate-200 pt-4 text-sm text-slate-600 dark:border-slate-700 dark:text-slate-400">
-        <h3 className="font-semibold text-slate-800 dark:text-slate-200">
+      <div className="mt-5 border-t border-[var(--border)] pt-4 text-sm text-neutral-600 dark:text-neutral-400">
+        <h3 className="font-semibold text-[var(--foreground)]">
           Windows / Chrome での確認（Zoom と別）
         </h3>
         <ol className="mt-2 list-decimal space-y-2 pl-5">
@@ -123,7 +123,7 @@ export function CameraTestPanel() {
           </li>
           <li>
             <strong>Chrome</strong>: アドレスバーに{" "}
-            <code className="rounded bg-slate-100 px-1 text-xs dark:bg-slate-800">
+            <code className="rounded bg-[var(--surface-muted)] px-1 text-xs ring-1 ring-[var(--border)]">
               chrome://settings/content/camera
             </code>{" "}
             を開き、一覧に <strong>localhost:3000</strong>（またはお使いのポート）が「ブロック」になっていないか確認。ブロックなら削除するか「許可」に変更。

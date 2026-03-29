@@ -1,3 +1,4 @@
+import { AppPageMain } from "@/components/layout/app-page";
 import { formatYen } from "@/lib/pricing";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import Link from "next/link";
@@ -34,76 +35,78 @@ export default async function OrderDetailPage({ params }: Props) {
 
   if (lErr) {
     return (
-      <main className="p-6">
+      <AppPageMain>
         <p className="text-red-600">明細の取得に失敗しました: {lErr.message}</p>
-      </main>
+      </AppPageMain>
     );
   }
 
   const rows = lines ?? [];
 
   return (
-    <main className="relative min-h-screen pb-20">
-      <div className="mx-auto max-w-4xl px-4 pt-8 sm:px-6 lg:px-10">
-        <p className="text-xs font-mono text-slate-500">SCR-ORD-DET</p>
-        <div className="mt-2 flex flex-wrap items-center justify-between gap-4">
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
-            注文詳細
-          </h1>
+    <AppPageMain className="pb-20">
+      <div className="mx-auto w-full max-w-4xl">
+        <header className="flex flex-col gap-4 border-b border-[var(--border)] pb-5 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-neutral-400">
+              Orders
+            </p>
+            <h1 className="mt-1 text-2xl font-semibold tracking-tight text-[var(--foreground)] sm:text-3xl">
+              注文詳細
+            </h1>
+          </div>
           <Link
             href="/orders"
-            className="text-sm font-semibold text-slate-600 underline-offset-4 hover:underline dark:text-slate-400"
+            className="shrink-0 text-sm font-semibold text-neutral-600 underline-offset-4 hover:underline dark:text-neutral-300"
           >
             一覧へ
           </Link>
-        </div>
+        </header>
 
-        <div className="mt-8 rounded-2xl border border-slate-200/80 bg-white p-6 shadow-card dark:border-slate-800/80 dark:bg-slate-900">
-          <p className="text-xs font-semibold uppercase text-slate-500">
+        <div className="mt-6 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-card">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-neutral-400">
             注文番号
           </p>
-          <p className="mt-1 font-mono text-lg font-bold text-slate-900 dark:text-white">
+          <p className="mt-1 font-mono text-lg font-semibold text-[var(--foreground)]">
             {order.order_number}
           </p>
-          <p className="mt-4 text-xs text-slate-500">
-            確定日時（表示はローカル）
-          </p>
-          <p className="text-sm text-slate-700 dark:text-slate-300">
+          <p className="mt-4 text-xs text-neutral-500">確定日時（Asia/Tokyo）</p>
+          <p className="text-sm text-[var(--foreground)]">
             {new Date(order.placed_at).toLocaleString("ja-JP", {
               timeZone: "Asia/Tokyo",
             })}
           </p>
-          <dl className="mt-6 grid gap-3 border-t border-slate-200 pt-6 dark:border-slate-700 sm:grid-cols-3">
+          <dl className="mt-5 grid gap-3 border-t border-[var(--border)] pt-5 sm:grid-cols-3">
             <div>
-              <dt className="text-xs text-slate-500">税抜小計</dt>
-              <dd className="text-lg font-semibold tabular-nums">
+              <dt className="text-xs text-neutral-500">税抜小計</dt>
+              <dd className="text-lg font-semibold tabular-nums text-[var(--foreground)]">
                 {formatYen(Number(order.subtotal_ex_tax))}
               </dd>
             </div>
             <div>
-              <dt className="text-xs text-slate-500">消費税</dt>
-              <dd className="text-lg font-semibold tabular-nums">
+              <dt className="text-xs text-neutral-500">消費税</dt>
+              <dd className="text-lg font-semibold tabular-nums text-[var(--foreground)]">
                 {formatYen(Number(order.tax_amount))}
               </dd>
             </div>
             <div>
-              <dt className="text-xs text-slate-500">税込合計</dt>
-              <dd className="text-lg font-bold tabular-nums text-slate-900 dark:text-white">
+              <dt className="text-xs text-neutral-500">税込合計</dt>
+              <dd className="text-lg font-semibold tabular-nums text-[var(--foreground)]">
                 {formatYen(Number(order.total_inc_tax))}
               </dd>
             </div>
           </dl>
         </div>
 
-        <div className="mt-8 overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-card dark:border-slate-800/80 dark:bg-slate-900">
-          <div className="border-b border-slate-200 px-5 py-3 dark:border-slate-800">
-            <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
+        <div className="mt-6 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-card">
+          <div className="border-b border-[var(--border)] bg-[var(--surface-muted)] px-5 py-3">
+            <h2 className="text-sm font-semibold text-[var(--foreground)]">
               明細
             </h2>
           </div>
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-slate-200 text-xs uppercase text-slate-500 dark:border-slate-700">
+              <tr className="border-b border-[var(--border)] text-[10px] font-semibold uppercase tracking-[0.08em] text-neutral-400">
                 <th className="px-4 py-2">SKU</th>
                 <th className="px-4 py-2">名称</th>
                 <th className="px-4 py-2 text-right">数量</th>
@@ -119,12 +122,12 @@ export default async function OrderDetailPage({ params }: Props) {
                 return (
                   <tr
                     key={row.id}
-                    className="border-b border-slate-100 dark:border-slate-800/80"
+                    className="border-b border-[var(--border)]/70 last:border-0"
                   >
-                    <td className="px-4 py-2 font-mono text-xs">
+                    <td className="px-4 py-2 font-mono text-xs text-[var(--foreground)]">
                       {sku?.sku_code ?? "—"}
                     </td>
-                    <td className="px-4 py-2 text-slate-600 dark:text-slate-400">
+                    <td className="px-4 py-2 text-neutral-600 dark:text-neutral-400">
                       {sku?.name_variant ?? "—"}
                     </td>
                     <td className="px-4 py-2 text-right tabular-nums">
@@ -133,7 +136,7 @@ export default async function OrderDetailPage({ params }: Props) {
                     <td className="px-4 py-2 text-right tabular-nums">
                       {formatYen(Number(row.unit_price_ex_tax))}
                     </td>
-                    <td className="px-4 py-2 text-right font-medium tabular-nums">
+                    <td className="px-4 py-2 text-right font-medium tabular-nums text-[var(--foreground)]">
                       {formatYen(Number(row.line_subtotal_ex_tax))}
                     </td>
                   </tr>
@@ -143,6 +146,6 @@ export default async function OrderDetailPage({ params }: Props) {
           </table>
         </div>
       </div>
-    </main>
+    </AppPageMain>
   );
 }

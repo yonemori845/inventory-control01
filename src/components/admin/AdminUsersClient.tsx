@@ -42,9 +42,9 @@ export function AdminUsersClient({
   };
 
   return (
-    <div className="mt-8">
+    <div className="mt-6">
       {!isAdmin ? (
-        <p className="rounded-xl border border-amber-200/80 bg-amber-50/50 px-4 py-3 text-sm text-amber-950 dark:border-amber-900/50 dark:bg-amber-950/25 dark:text-amber-100/90">
+        <p className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] px-4 py-3 text-sm text-[var(--foreground)]">
           ロールの変更は <strong>admin</strong> のユーザーのみ可能です。一覧は参照のみです。
         </p>
       ) : null}
@@ -54,7 +54,7 @@ export function AdminUsersClient({
           className={[
             "mb-4 text-sm",
             msg.ok
-              ? "text-emerald-700 dark:text-emerald-400"
+              ? "text-neutral-700 dark:text-neutral-300"
               : "text-red-600 dark:text-red-400",
           ].join(" ")}
           role="status"
@@ -63,9 +63,9 @@ export function AdminUsersClient({
         </p>
       ) : null}
 
-      <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-card dark:border-slate-800/80 dark:bg-slate-900">
+      <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-card">
         <table className="w-full min-w-[32rem] text-left text-sm">
-          <thead className="border-b border-slate-200/90 bg-slate-50/80 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:border-slate-800 dark:bg-slate-800/40 dark:text-slate-400">
+          <thead className="border-b border-[var(--border)] bg-[var(--surface-muted)] text-[10px] font-semibold uppercase tracking-[0.08em] text-neutral-400">
             <tr>
               <th className="px-4 py-3">表示名</th>
               <th className="px-4 py-3">ユーザー ID</th>
@@ -73,32 +73,32 @@ export function AdminUsersClient({
               <th className="hidden px-4 py-3 sm:table-cell">登録</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+          <tbody className="divide-y divide-[var(--border)]">
             {profiles.map((p) => (
               <tr
                 key={p.id}
                 className={
                   p.id === currentUserId
-                    ? "bg-indigo-50/40 dark:bg-indigo-500/[0.06]"
+                    ? "bg-[var(--surface-muted)]"
                     : ""
                 }
               >
-                <td className="px-4 py-3 font-medium text-slate-900 dark:text-slate-100">
+                <td className="px-4 py-3 font-medium text-[var(--foreground)]">
                   {p.display_name?.trim() || "—"}
                   {p.id === currentUserId ? (
-                    <span className="ml-2 text-xs font-normal text-indigo-600 dark:text-indigo-300">
+                    <span className="ml-2 text-xs font-normal text-neutral-500">
                       （あなた）
                     </span>
                   ) : null}
                 </td>
-                <td className="px-4 py-3 font-mono text-xs text-slate-600 dark:text-slate-400">
+                <td className="px-4 py-3 font-mono text-xs text-neutral-600 dark:text-neutral-400">
                   {p.id.slice(0, 8)}…
                 </td>
                 <td className="px-4 py-3">
                   {isAdmin ? (
                     <select
                       aria-label={`${p.id} のロール`}
-                      className="w-full max-w-[10rem] rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-sm dark:border-slate-700 dark:bg-slate-950"
+                      className="w-full max-w-[10rem] rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2 py-1.5 text-sm dark:bg-[var(--surface-muted)]"
                       value={p.role === "user" ? "user" : "admin"}
                       disabled={pending}
                       onChange={(e) =>
@@ -109,12 +109,12 @@ export function AdminUsersClient({
                       <option value="user">user</option>
                     </select>
                   ) : (
-                    <span className="font-mono text-slate-800 dark:text-slate-200">
+                    <span className="font-mono text-neutral-800 dark:text-neutral-200">
                       {p.role}
                     </span>
                   )}
                 </td>
-                <td className="hidden px-4 py-3 text-slate-500 dark:text-slate-400 sm:table-cell">
+                <td className="hidden px-4 py-3 text-neutral-500 dark:text-neutral-400 sm:table-cell">
                   {p.created_at.slice(0, 10)}
                 </td>
               </tr>

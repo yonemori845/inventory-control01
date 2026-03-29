@@ -58,28 +58,28 @@ export function SettingsClient({
   };
 
   return (
-    <div className="mt-8 space-y-8">
-      <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-card dark:border-slate-800/80 dark:bg-slate-900">
-        <h2 className="text-base font-semibold text-slate-900 dark:text-white">
+    <div className="mt-6 space-y-6">
+      <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-card sm:p-5">
+        <h2 className="text-base font-semibold text-[var(--foreground)]">
           プロフィール
         </h2>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+        <p className="mt-1 text-sm leading-snug text-neutral-600 dark:text-neutral-400">
           表示名はアプリ内の識別に使います（認証メールアドレスは変更しません）。
         </p>
         <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
           <div>
-            <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">
+            <dt className="text-xs font-medium uppercase tracking-wide text-neutral-500">
               メール
             </dt>
-            <dd className="mt-0.5 font-medium text-slate-900 dark:text-slate-100">
+            <dd className="mt-0.5 font-medium text-[var(--foreground)]">
               {email}
             </dd>
           </div>
           <div>
-            <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">
+            <dt className="text-xs font-medium uppercase tracking-wide text-neutral-500">
               ロール
             </dt>
-            <dd className="mt-0.5 font-mono text-slate-800 dark:text-slate-200">
+            <dd className="mt-0.5 font-mono text-neutral-800 dark:text-neutral-200">
               {role}
             </dd>
           </div>
@@ -88,7 +88,7 @@ export function SettingsClient({
           <div className="min-w-0 flex-1">
             <label
               htmlFor="display-name"
-              className="text-xs font-medium text-slate-600 dark:text-slate-400"
+              className="text-xs font-medium text-neutral-600 dark:text-neutral-400"
             >
               表示名
             </label>
@@ -97,7 +97,7 @@ export function SettingsClient({
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="mt-1 w-full rounded-xl border border-slate-200/90 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+              className="mt-1 w-full rounded-xl border border-[var(--border)] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--foreground)] shadow-sm outline-none transition focus:border-[var(--border-strong)] focus:ring-2 focus:ring-neutral-900/10 dark:focus:ring-white/10 dark:bg-[var(--surface-muted)]"
               autoComplete="nickname"
               maxLength={120}
             />
@@ -105,7 +105,7 @@ export function SettingsClient({
           <button
             type="submit"
             disabled={pending}
-            className="shrink-0 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500 disabled:opacity-60"
+            className="shrink-0 rounded-full bg-neutral-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-neutral-800 disabled:opacity-60 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-200"
           >
             保存
           </button>
@@ -115,7 +115,7 @@ export function SettingsClient({
             className={[
               "mt-3 text-sm",
               msg.ok
-                ? "text-emerald-700 dark:text-emerald-400"
+                ? "text-neutral-700 dark:text-neutral-300"
                 : "text-red-600 dark:text-red-400",
             ].join(" ")}
             role="status"
@@ -125,11 +125,11 @@ export function SettingsClient({
         ) : null}
       </section>
 
-      <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-card dark:border-slate-800/80 dark:bg-slate-900">
-        <h2 className="text-base font-semibold text-slate-900 dark:text-white">
+      <section className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-card sm:p-5">
+        <h2 className="text-base font-semibold text-[var(--foreground)]">
           データベース
         </h2>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+        <p className="mt-1 text-sm leading-snug text-neutral-600 dark:text-neutral-400">
           Supabase への簡易疎通（在庫マスタの参照 1 件）です。
         </p>
         <div className="mt-4 flex flex-wrap items-center gap-2">
@@ -137,14 +137,14 @@ export function SettingsClient({
             className={[
               "inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold",
               dbOk
-                ? "bg-emerald-100 text-emerald-900 dark:bg-emerald-500/15 dark:text-emerald-200"
-                : "bg-red-100 text-red-900 dark:bg-red-500/15 dark:text-red-200",
+                ? "bg-[var(--surface-muted)] text-[var(--foreground)] ring-1 ring-[var(--border)]"
+                : "bg-red-50 text-red-900 ring-1 ring-red-200 dark:bg-red-950/40 dark:text-red-200 dark:ring-red-900/50",
             ].join(" ")}
           >
             {dbOk ? "接続 OK" : "接続エラー"}
           </span>
           {dbDetail ? (
-            <span className="text-xs text-slate-500 dark:text-slate-400">
+            <span className="text-xs text-neutral-500 dark:text-neutral-400">
               {dbDetail}
             </span>
           ) : null}
@@ -152,12 +152,12 @@ export function SettingsClient({
       </section>
 
       {allowDevSeed ? (
-        <section className="rounded-2xl border border-amber-200/80 bg-amber-50/40 p-5 shadow-sm dark:border-amber-900/40 dark:bg-amber-950/20">
-          <h2 className="text-base font-semibold text-slate-900 dark:text-amber-100">
+        <section className="rounded-2xl border border-[var(--border-strong)] bg-[var(--surface-muted)] p-4 shadow-card sm:p-5">
+          <h2 className="text-base font-semibold text-[var(--foreground)]">
             開発用シード
           </h2>
-          <p className="mt-1 text-sm text-slate-700 dark:text-amber-100/80">
-            <code className="rounded bg-white/60 px-1 py-0.5 text-xs dark:bg-black/30">
+          <p className="mt-1 text-sm text-neutral-700 dark:text-neutral-300">
+            <code className="rounded bg-[var(--surface)] px-1 py-0.5 text-xs ring-1 ring-[var(--border)]">
               ALLOW_DEV_SEED=true
             </code>{" "}
             のときのみ有効です。デモ用 SKU を CSV 取込 RPC で
@@ -167,7 +167,7 @@ export function SettingsClient({
             type="button"
             disabled={pending}
             onClick={onSeed}
-            className="mt-4 rounded-xl border border-amber-300/90 bg-white px-4 py-2.5 text-sm font-semibold text-amber-950 shadow-sm transition hover:bg-amber-50 disabled:opacity-60 dark:border-amber-700 dark:bg-slate-900 dark:text-amber-50 dark:hover:bg-slate-800"
+            className="mt-4 rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2.5 text-sm font-semibold text-[var(--foreground)] shadow-sm transition hover:bg-[var(--surface-muted)] disabled:opacity-60"
           >
             デモ SKU を取り込む
           </button>
@@ -176,7 +176,7 @@ export function SettingsClient({
               className={[
                 "mt-3 text-sm",
                 seedMsg.ok
-                  ? "text-emerald-800 dark:text-emerald-300"
+                  ? "text-neutral-800 dark:text-neutral-200"
                   : "text-red-700 dark:text-red-300",
               ].join(" ")}
               role="status"

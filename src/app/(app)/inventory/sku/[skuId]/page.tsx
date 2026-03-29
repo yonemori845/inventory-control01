@@ -6,6 +6,7 @@ import {
   SkuDetailView,
   type SkuDetailRow,
 } from "@/components/inventory/SkuDetailView";
+import { AppPageMain } from "@/components/layout/app-page";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 
@@ -66,11 +67,13 @@ export default async function InventorySkuDetailPage({
   const rec = recommendedOrderQty(row.quantity, row.safety_stock);
 
   return (
-    <SkuDetailView
-      row={row}
-      lastInboundAt={lastInboundAt}
-      alert={alert}
-      rec={rec}
-    />
+    <AppPageMain className="pb-24">
+      <SkuDetailView
+        row={row}
+        lastInboundAt={lastInboundAt}
+        alert={alert}
+        rec={rec}
+      />
+    </AppPageMain>
   );
 }

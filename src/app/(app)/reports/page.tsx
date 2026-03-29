@@ -1,3 +1,4 @@
+import { AppPageMain } from "@/components/layout/app-page";
 import { formatYen } from "@/lib/pricing";
 import { isIsoDate, loadReportContext } from "@/lib/report-data";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
@@ -26,9 +27,11 @@ export default async function ReportsPage({
 
   if (!user) {
     return (
-      <main className="p-6">
-        <p>ログインが必要です。</p>
-      </main>
+      <AppPageMain>
+        <p className="text-neutral-600 dark:text-neutral-400">
+          ログインが必要です。
+        </p>
+      </AppPageMain>
     );
   }
 
@@ -49,146 +52,150 @@ export default async function ReportsPage({
   const pdfHref = `/api/reports/export/pdf?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`;
 
   return (
-    <main className="relative min-h-screen pb-24">
-      <div className="mx-auto max-w-6xl px-4 pt-8 sm:px-6 lg:px-10">
-        <p className="text-xs font-mono text-slate-500">SCR-RPT</p>
-        <h1 className="mt-1 text-3xl font-bold text-slate-900 dark:text-white">
+    <AppPageMain className="pb-24">
+      <header className="border-b border-[var(--border)] pb-5">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-neutral-400">
+          Reports
+        </p>
+        <h1 className="mt-1 text-2xl font-semibold tracking-tight text-[var(--foreground)] sm:text-3xl">
           レポート・エクスポート
         </h1>
-        <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+        <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-neutral-500">
           期間を指定して集計を確認し、Excel または PDF
           でダウンロードできます（日付境界は Asia/Tokyo）。
         </p>
+      </header>
 
-        <form
-          method="get"
-          className="mt-8 flex flex-wrap items-end gap-3 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm dark:border-slate-800/80 dark:bg-slate-900"
+      <form
+        method="get"
+        className="mt-6 flex flex-wrap items-end gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-card"
+      >
+        <div>
+          <label className="mb-1 block text-[10px] font-semibold uppercase tracking-[0.12em] text-neutral-400">
+            開始日
+          </label>
+          <input
+            type="date"
+            name="from"
+            defaultValue={from}
+            className="h-10 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2 text-sm dark:bg-[var(--surface-muted)]"
+          />
+        </div>
+        <div>
+          <label className="mb-1 block text-[10px] font-semibold uppercase tracking-[0.12em] text-neutral-400">
+            終了日
+          </label>
+          <input
+            type="date"
+            name="to"
+            defaultValue={to}
+            className="h-10 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2 text-sm dark:bg-[var(--surface-muted)]"
+          />
+        </div>
+        <button
+          type="submit"
+          className="h-10 rounded-lg border border-neutral-900 bg-neutral-900 px-4 text-sm font-semibold text-white dark:border-white dark:bg-white dark:text-neutral-900"
         >
-          <div>
-            <label className="mb-1 block text-xs font-semibold text-slate-500">
-              開始日
-            </label>
-            <input
-              type="date"
-              name="from"
-              defaultValue={from}
-              className="h-10 rounded-lg border border-slate-200 px-2 text-sm dark:border-slate-600 dark:bg-slate-800"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-xs font-semibold text-slate-500">
-              終了日
-            </label>
-            <input
-              type="date"
-              name="to"
-              defaultValue={to}
-              className="h-10 rounded-lg border border-slate-200 px-2 text-sm dark:border-slate-600 dark:bg-slate-800"
-            />
-          </div>
-          <button
-            type="submit"
-            className="h-10 rounded-lg bg-slate-900 px-4 text-sm font-semibold text-white dark:bg-white dark:text-slate-900"
-          >
-            表示
-          </button>
-        </form>
+          表示
+        </button>
+      </form>
 
-        {errMsg ? (
-          <p className="mt-4 text-sm text-red-600">{errMsg}</p>
-        ) : null}
+      {errMsg ? (
+        <p className="mt-4 text-sm text-red-600">{errMsg}</p>
+      ) : null}
 
-        <div className="mt-8 grid gap-4 sm:grid-cols-3">
-          <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-card dark:border-slate-800/80 dark:bg-slate-900">
-            <p className="text-xs font-semibold uppercase text-slate-500">
-              税抜売上合計
-            </p>
-            <p className="mt-2 text-xl font-bold tabular-nums">
-              {formatYen(sumEx)}
-            </p>
-          </div>
-          <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-card dark:border-slate-800/80 dark:bg-slate-900">
-            <p className="text-xs font-semibold uppercase text-slate-500">
-              税額合計
-            </p>
-            <p className="mt-2 text-xl font-bold tabular-nums">
-              {formatYen(sumTax)}
-            </p>
-          </div>
-          <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-card dark:border-slate-800/80 dark:bg-slate-900">
-            <p className="text-xs font-semibold uppercase text-slate-500">
-              税込売上合計
-            </p>
-            <p className="mt-2 text-xl font-bold tabular-nums">
-              {formatYen(sumInc)}
-            </p>
-          </div>
+      <div className="mt-6 grid gap-4 sm:grid-cols-3">
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-card">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-neutral-400">
+            税抜売上合計
+          </p>
+          <p className="mt-2 text-xl font-semibold tabular-nums text-[var(--foreground)]">
+            {formatYen(sumEx)}
+          </p>
         </div>
-
-        <div className="mt-10 flex flex-wrap gap-3">
-          <a
-            href={xlsxHref}
-            className="inline-flex items-center justify-center rounded-xl bg-emerald-700 px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-800"
-          >
-            Excel ダウンロード
-          </a>
-          <a
-            href={pdfHref}
-            className="inline-flex items-center justify-center rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-semibold dark:border-slate-600"
-          >
-            PDF ダウンロード
-          </a>
-          <Link
-            href="/"
-            className="inline-flex items-center justify-center rounded-xl px-5 py-2.5 text-sm font-semibold text-slate-600 underline-offset-4 hover:underline dark:text-slate-400"
-          >
-            ダッシュボード
-          </Link>
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-card">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-neutral-400">
+            税額合計
+          </p>
+          <p className="mt-2 text-xl font-semibold tabular-nums text-[var(--foreground)]">
+            {formatYen(sumTax)}
+          </p>
         </div>
-
-        <div className="mt-10 overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-card dark:border-slate-800/80 dark:bg-slate-900">
-          <div className="border-b border-slate-200 px-4 py-3 dark:border-slate-800">
-            <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
-              注文一覧（期間内）
-            </h2>
-          </div>
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr className="border-b border-slate-200 text-xs uppercase text-slate-500 dark:border-slate-700">
-                <th className="px-4 py-2">注文番号</th>
-                <th className="px-4 py-2">確定日時</th>
-                <th className="px-4 py-2 text-right">税込</th>
-              </tr>
-            </thead>
-            <tbody>
-              {ctx.orders.length === 0 ? (
-                <tr>
-                  <td colSpan={3} className="px-4 py-8 text-center text-slate-500">
-                    データがありません
-                  </td>
-                </tr>
-              ) : (
-                ctx.orders.map((o) => (
-                  <tr
-                    key={o.id}
-                    className="border-b border-slate-100 dark:border-slate-800/80"
-                  >
-                    <td className="px-4 py-2 font-mono text-xs">{o.order_number}</td>
-                    <td className="px-4 py-2 text-slate-600 dark:text-slate-400">
-                      {new Date(o.placed_at).toLocaleString("ja-JP", {
-                        timeZone: "Asia/Tokyo",
-                      })}
-                    </td>
-                    <td className="px-4 py-2 text-right tabular-nums">
-                      {formatYen(Number(o.total_inc_tax))}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+        <div className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-card">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-neutral-400">
+            税込売上合計
+          </p>
+          <p className="mt-2 text-xl font-semibold tabular-nums text-[var(--foreground)]">
+            {formatYen(sumInc)}
+          </p>
         </div>
       </div>
-    </main>
+
+      <div className="mt-8 flex flex-wrap gap-3">
+        <a
+          href={xlsxHref}
+          className="inline-flex items-center justify-center rounded-full bg-neutral-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-neutral-800 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-200"
+        >
+          Excel ダウンロード
+        </a>
+        <a
+          href={pdfHref}
+          className="inline-flex items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] px-5 py-2.5 text-sm font-semibold text-[var(--foreground)] shadow-sm hover:border-[var(--border-strong)]"
+        >
+          PDF ダウンロード
+        </a>
+        <Link
+          href="/"
+          className="inline-flex items-center justify-center rounded-full px-5 py-2.5 text-sm font-semibold text-neutral-600 underline-offset-4 hover:underline dark:text-neutral-300"
+        >
+          ダッシュボード
+        </Link>
+      </div>
+
+      <div className="mt-8 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-card">
+        <div className="border-b border-[var(--border)] bg-[var(--surface-muted)] px-4 py-3">
+          <h2 className="text-sm font-semibold text-[var(--foreground)]">
+            注文一覧（期間内）
+          </h2>
+        </div>
+        <table className="w-full text-left text-sm">
+          <thead>
+            <tr className="border-b border-[var(--border)] text-[10px] font-semibold uppercase tracking-[0.08em] text-neutral-400">
+              <th className="px-4 py-2">注文番号</th>
+              <th className="px-4 py-2">確定日時</th>
+              <th className="px-4 py-2 text-right">税込</th>
+            </tr>
+          </thead>
+          <tbody>
+            {ctx.orders.length === 0 ? (
+              <tr>
+                <td colSpan={3} className="px-4 py-8 text-center text-neutral-500">
+                  データがありません
+                </td>
+              </tr>
+            ) : (
+              ctx.orders.map((o) => (
+                <tr
+                  key={o.id}
+                  className="border-b border-[var(--border)]/70 last:border-0"
+                >
+                  <td className="px-4 py-2 font-mono text-xs text-[var(--foreground)]">
+                    {o.order_number}
+                  </td>
+                  <td className="px-4 py-2 text-neutral-600 dark:text-neutral-400">
+                    {new Date(o.placed_at).toLocaleString("ja-JP", {
+                      timeZone: "Asia/Tokyo",
+                    })}
+                  </td>
+                  <td className="px-4 py-2 text-right tabular-nums text-[var(--foreground)]">
+                    {formatYen(Number(o.total_inc_tax))}
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </AppPageMain>
   );
 }

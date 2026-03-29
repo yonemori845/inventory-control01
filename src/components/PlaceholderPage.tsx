@@ -1,3 +1,5 @@
+import { AppPageMain } from "@/components/layout/app-page";
+
 type PlaceholderPageProps = {
   screenId: string;
   title: string;
@@ -5,14 +7,16 @@ type PlaceholderPageProps = {
 
 export function PlaceholderPage({ screenId, title }: PlaceholderPageProps) {
   return (
-    <main className="p-6">
-      <p className="text-xs font-mono text-neutral-500">{screenId}</p>
-      <h1 className="mt-1 text-xl font-semibold text-neutral-900 dark:text-neutral-100">
+    <AppPageMain>
+      <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-neutral-400">
+        {screenId}
+      </p>
+      <h1 className="mt-1 text-2xl font-semibold tracking-tight text-[var(--foreground)]">
         {title}
       </h1>
-      <p className="mt-2 text-sm text-neutral-600 dark:text-neutral-400">
+      <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-neutral-500">
         フェーズ A：ルート骨格のみ。以降のフェーズで実装します。
       </p>
-    </main>
+    </AppPageMain>
   );
 }

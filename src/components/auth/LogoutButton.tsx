@@ -25,7 +25,7 @@ export function LogoutButton() {
       type="button"
       onClick={() => void signOut()}
       disabled={loading}
-      className="w-full rounded-lg border border-transparent px-3 py-2 text-left text-xs font-semibold text-slate-600 transition hover:border-slate-200 hover:bg-slate-50 disabled:opacity-50 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:bg-slate-700/50"
+      className="w-full rounded-lg border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-2 text-left text-xs font-semibold text-neutral-700 transition hover:border-[var(--border-strong)] hover:bg-[var(--surface)] disabled:opacity-50 dark:text-neutral-200"
     >
       {loading ? "ログアウト中…" : "ログアウト"}
     </button>

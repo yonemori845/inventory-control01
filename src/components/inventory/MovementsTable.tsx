@@ -63,7 +63,7 @@ export function MovementsTable({ rows, filters }: Props) {
   return (
     <div>
       <form
-        className="mb-6 flex flex-wrap items-end gap-3 rounded-lg border border-neutral-200 p-4 dark:border-neutral-800"
+        className="mb-5 flex flex-wrap items-end gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-card"
         onSubmit={(e) => {
           e.preventDefault();
           const fd = new FormData(e.currentTarget);
@@ -76,29 +76,35 @@ export function MovementsTable({ rows, filters }: Props) {
         }}
       >
         <div>
-          <label className="block text-xs text-neutral-500">開始日</label>
+          <label className="mb-1 block text-[10px] font-semibold uppercase tracking-[0.12em] text-neutral-400">
+            開始日
+          </label>
           <input
             name="from"
             type="date"
             defaultValue={filters.from}
-            className="rounded border border-neutral-300 px-2 py-1 text-sm dark:border-neutral-600 dark:bg-neutral-900"
+            className="h-9 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2 text-sm dark:bg-[var(--surface-muted)]"
           />
         </div>
         <div>
-          <label className="block text-xs text-neutral-500">終了日</label>
+          <label className="mb-1 block text-[10px] font-semibold uppercase tracking-[0.12em] text-neutral-400">
+            終了日
+          </label>
           <input
             name="to"
             type="date"
             defaultValue={filters.to}
-            className="rounded border border-neutral-300 px-2 py-1 text-sm dark:border-neutral-600 dark:bg-neutral-900"
+            className="h-9 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2 text-sm dark:bg-[var(--surface-muted)]"
           />
         </div>
         <div>
-          <label className="block text-xs text-neutral-500">理由</label>
+          <label className="mb-1 block text-[10px] font-semibold uppercase tracking-[0.12em] text-neutral-400">
+            理由
+          </label>
           <select
             name="reason"
             defaultValue={filters.reason}
-            className="rounded border border-neutral-300 px-2 py-1 text-sm dark:border-neutral-600 dark:bg-neutral-900"
+            className="h-9 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2 text-sm dark:bg-[var(--surface-muted)]"
           >
             <option value="">すべて</option>
             <option value="manual_adjust">手動調整</option>
@@ -108,34 +114,36 @@ export function MovementsTable({ rows, filters }: Props) {
           </select>
         </div>
         <div className="min-w-[160px] flex-1">
-          <label className="block text-xs text-neutral-500">SKU / JAN / 名称</label>
+          <label className="mb-1 block text-[10px] font-semibold uppercase tracking-[0.12em] text-neutral-400">
+            SKU / JAN / 名称
+          </label>
           <input
             name="q"
             type="search"
             defaultValue={filters.q}
             placeholder="部分一致"
-            className="w-full rounded border border-neutral-300 px-2 py-1 text-sm dark:border-neutral-600 dark:bg-neutral-900"
+            className="h-9 w-full rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2 text-sm dark:bg-[var(--surface-muted)]"
           />
         </div>
         <button
           type="submit"
           disabled={pending}
-          className="rounded border border-neutral-300 bg-white px-3 py-2 text-sm font-medium text-neutral-800 shadow-sm transition hover:bg-neutral-50 disabled:opacity-50 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-100 dark:hover:bg-neutral-700"
+          className="h-9 rounded-lg border border-neutral-900 bg-neutral-900 px-4 text-xs font-semibold text-white shadow-sm hover:bg-neutral-800 disabled:opacity-50 dark:border-white dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-200"
         >
           絞り込み
         </button>
       </form>
 
-      <div className="overflow-x-auto rounded-lg border border-neutral-200 dark:border-neutral-800">
+      <div className="overflow-x-auto rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-card">
         <table className="w-full min-w-[800px] text-sm">
-          <thead className="bg-neutral-50 text-left text-xs text-neutral-600 dark:bg-neutral-900 dark:text-neutral-400">
+          <thead className="border-b border-[var(--border)] bg-[var(--surface-muted)] text-left text-[10px] font-semibold uppercase tracking-[0.08em] text-neutral-400">
             <tr>
-              <th className="px-3 py-2">日時</th>
-              <th className="px-3 py-2">SKU</th>
-              <th className="px-3 py-2">JAN</th>
-              <th className="px-3 py-2">名称</th>
-              <th className="px-3 py-2">理由</th>
-              <th className="px-3 py-2 text-right">増減</th>
+              <th className="px-3 py-2.5">日時</th>
+              <th className="px-3 py-2.5">SKU</th>
+              <th className="px-3 py-2.5">JAN</th>
+              <th className="px-3 py-2.5">名称</th>
+              <th className="px-3 py-2.5">理由</th>
+              <th className="px-3 py-2.5 text-right">増減</th>
             </tr>
           </thead>
           <tbody>
@@ -152,16 +160,16 @@ export function MovementsTable({ rows, filters }: Props) {
                 return (
                   <tr
                     key={m.id}
-                    className="border-t border-neutral-100 dark:border-neutral-800"
+                    className="border-b border-[var(--border)]/70 last:border-0"
                   >
-                    <td className="whitespace-nowrap px-3 py-2 font-mono text-xs">
+                    <td className="whitespace-nowrap px-3 py-2 font-mono text-xs text-neutral-600 dark:text-neutral-400">
                       {new Date(m.created_at).toLocaleString("ja-JP")}
                     </td>
                     <td className="px-3 py-2 font-mono text-xs">
                       {sku?.sku_code ? (
                         <Link
                           href={`/inventory/sku/${m.sku_id}`}
-                          className="text-neutral-800 underline-offset-2 hover:underline dark:text-neutral-200"
+                          className="font-semibold text-[var(--foreground)] underline-offset-2 hover:underline"
                         >
                           {sku.sku_code}
                         </Link>
@@ -169,16 +177,18 @@ export function MovementsTable({ rows, filters }: Props) {
                         "—"
                       )}
                     </td>
-                    <td className="px-3 py-2 font-mono text-xs">
+                    <td className="px-3 py-2 font-mono text-xs text-neutral-600 dark:text-neutral-400">
                       {sku?.jan_code ?? "—"}
                     </td>
-                    <td className="px-3 py-2">{sku?.name_variant ?? "—"}</td>
-                    <td className="px-3 py-2">{label}</td>
+                    <td className="px-3 py-2 text-neutral-600 dark:text-neutral-400">
+                      {sku?.name_variant ?? "—"}
+                    </td>
+                    <td className="px-3 py-2 text-[var(--foreground)]">{label}</td>
                     <td
                       className={`px-3 py-2 text-right font-mono tabular-nums ${
                         m.quantity_delta >= 0
-                          ? "text-slate-800 dark:text-slate-200"
-                          : "text-red-700 dark:text-red-400"
+                          ? "text-neutral-700 dark:text-neutral-300"
+                          : "text-neutral-500"
                       }`}
                     >
                       {m.quantity_delta > 0 ? "+" : ""}
@@ -192,8 +202,11 @@ export function MovementsTable({ rows, filters }: Props) {
         </table>
       </div>
 
-      <p className="mt-4 text-sm">
-        <Link href="/inventory" className="text-neutral-600 underline dark:text-neutral-400">
+      <p className="mt-5 text-sm">
+        <Link
+          href="/inventory"
+          className="font-semibold text-neutral-600 underline-offset-4 hover:underline dark:text-neutral-300"
+        >
           ← 在庫一覧
         </Link>
       </p>

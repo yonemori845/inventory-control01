@@ -2,6 +2,7 @@ import {
   InventoryListClient,
   type GroupRow,
 } from "@/components/inventory/InventoryListClient";
+import { AppPageMain } from "@/components/layout/app-page";
 import { isInventoryAlert } from "@/lib/inventory/alerts";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
@@ -37,9 +38,9 @@ export default async function InventoryPage() {
 
   if (error) {
     return (
-      <main className="p-6">
+      <AppPageMain>
         <p className="text-red-600">データの取得に失敗しました: {error.message}</p>
-      </main>
+      </AppPageMain>
     );
   }
 
@@ -60,5 +61,9 @@ export default async function InventoryPage() {
     alertCount,
   };
 
-  return <InventoryListClient groups={list} summary={summary} />;
+  return (
+    <AppPageMain className="pb-24">
+      <InventoryListClient groups={list} summary={summary} />
+    </AppPageMain>
+  );
 }

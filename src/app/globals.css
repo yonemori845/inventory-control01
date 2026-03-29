@@ -3,36 +3,47 @@
 @tailwind utilities;
 
 :root {
-  --background: #f1f5f9;
-  --foreground: #0f172a;
+  --background: #f4f4f5;
+  --foreground: #171717;
   --surface: #ffffff;
-  --surface-muted: #f8fafc;
-  --accent: #475569;
-  --accent-hover: #334155;
-  --accent-subtle: rgba(71, 85, 105, 0.12);
-  --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.04),
-    0 4px 12px rgba(15, 23, 42, 0.06);
-  --shadow-card-hover: 0 4px 8px rgba(15, 23, 42, 0.06),
-    0 12px 24px rgba(15, 23, 42, 0.08);
-  --app-canvas: #eceff3;
-  --app-canvas-dark: #080a0d;
-  --sidebar-bg: #f6f7f9;
-  --sidebar-bg-dark: #0f1218;
+  --surface-muted: #fafafa;
+  --border: #e5e7eb;
+  --border-strong: #d4d4d8;
+  --accent: #404040;
+  --accent-hover: #262626;
+  --accent-subtle: rgba(23, 23, 23, 0.06);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 14px rgba(0, 0, 0, 0.05);
+  --shadow-card-hover: 0 4px 8px rgba(0, 0, 0, 0.04),
+    0 14px 28px rgba(0, 0, 0, 0.07);
+  --app-canvas: #f4f4f5;
+  --app-canvas-dark: #0a0a0a;
+  --sidebar-bg: #f4f4f5;
+  --sidebar-bg-dark: #0f0f0f;
+  --chart-line: #171717;
+  --chart-grid: #e5e7eb;
+  --chart-area-top: rgba(23, 23, 23, 0.11);
+  --chart-area-bottom: rgba(23, 23, 23, 0);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0c0f14;
-    --foreground: #f1f5f9;
-    --surface: #14181f;
-    --surface-muted: #1a1f2a;
-    --accent: #94a3b8;
-    --accent-hover: #cbd5e1;
-    --accent-subtle: rgba(148, 163, 184, 0.15);
-    --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.06),
-      0 8px 24px rgba(0, 0, 0, 0.35);
-    --shadow-card-hover: 0 1px 0 rgba(255, 255, 255, 0.08),
-      0 12px 32px rgba(0, 0, 0, 0.45);
+    --background: #0a0a0a;
+    --foreground: #fafafa;
+    --surface: #141414;
+    --surface-muted: #1a1a1a;
+    --border: #27272a;
+    --border-strong: #3f3f46;
+    --accent: #d4d4d8;
+    --accent-hover: #f4f4f5;
+    --accent-subtle: rgba(244, 244, 245, 0.08);
+    --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.04),
+      0 8px 22px rgba(0, 0, 0, 0.45);
+    --shadow-card-hover: 0 1px 0 rgba(255, 255, 255, 0.06),
+      0 16px 36px rgba(0, 0, 0, 0.5);
+    --chart-line: #e5e5e5;
+    --chart-grid: #27272a;
+    --chart-area-top: rgba(229, 229, 229, 0.14);
+    --chart-area-bottom: rgba(229, 229, 229, 0);
   }
 }
 
@@ -44,6 +55,6 @@ body {
 /* フォーカス可視性（キーボード操作） */
 @layer base {
   :focus-visible {
-    @apply outline-2 outline-offset-2 outline-accent;
+    @apply outline-2 outline-offset-2 outline-neutral-900 dark:outline-neutral-100;
   }
 }

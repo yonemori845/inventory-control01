@@ -19,6 +19,10 @@ export default {
           DEFAULT: "var(--surface)",
           muted: "var(--surface-muted)",
         },
+        border: {
+          DEFAULT: "var(--border)",
+          strong: "var(--border-strong)",
+        },
         accent: {
           DEFAULT: "var(--accent)",
           hover: "var(--accent-hover)",

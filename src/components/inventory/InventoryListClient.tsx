@@ -135,35 +135,30 @@ export function InventoryListClient({ groups, summary }: Props) {
   }
 
   return (
-    <main className="relative min-h-screen bg-transparent pb-24">
-      <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute -left-32 top-0 h-[28rem] w-[28rem] rounded-full bg-slate-300/[0.12] blur-[100px] dark:bg-slate-500/[0.07]" />
-        <div className="absolute -right-24 top-40 h-[22rem] w-[22rem] rounded-full bg-slate-400/[0.1] blur-[90px] dark:bg-slate-600/[0.06]" />
-        <div className="absolute bottom-0 left-1/3 h-64 w-96 rounded-full bg-slate-200/[0.2] blur-[80px] dark:bg-slate-800/20" />
-      </div>
-
-      <div className="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-10 lg:pt-10">
-        <header className="border-b border-slate-200/90 pb-8 dark:border-slate-800/90">
-          <p className="text-xs font-mono text-slate-500">SCR-INV-LIST</p>
-          <h1 className="mt-1 text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+    <div className="relative min-h-0">
+      <header className="border-b border-[var(--border)] pb-5">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-neutral-400">
+            Inventory
+          </p>
+          <h1 className="mt-1 text-2xl font-semibold tracking-tight text-[var(--foreground)] sm:text-3xl">
             在庫一覧
           </h1>
-          <p className="mt-2 max-w-2xl text-sm text-slate-600 dark:text-slate-400">
+          <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-neutral-500">
             親商品（グループ）と SKU
             をまたいで検索し、数量をその場で更新できます。CSV
             によるマスタ反映とバーコード入庫で、倉庫・店舗の運用に合わせた入庫フローもまとめて扱えます。
           </p>
-          <div className="mt-3">
+          <div className="mt-2">
             <Link
               href="/inventory/movements"
-              className="text-sm font-semibold text-slate-600 underline-offset-4 hover:underline dark:text-slate-400"
+              className="text-sm font-semibold text-neutral-600 underline-offset-4 hover:underline dark:text-neutral-300"
             >
               入出庫履歴を見る
             </Link>
           </div>
         </header>
 
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <SummaryCard
             label="商品グループ"
             value={summary.groupCount}
@@ -194,30 +189,30 @@ export function InventoryListClient({ groups, summary }: Props) {
           />
         </div>
 
-        <div className="mt-8 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-card dark:border-slate-800/80 dark:bg-slate-900 sm:p-5">
+        <div className="mt-6 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-card sm:p-5">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
             <div className="relative min-w-0 flex-1">
-              <IconSearch className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <IconSearch className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
               <input
                 type="search"
                 placeholder="商品名・グループコード・SKU・JAN で検索…"
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
-                className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50/80 pl-10 pr-4 text-sm text-slate-900 placeholder:text-slate-400 transition focus:border-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-400/25 dark:border-slate-700 dark:bg-slate-800/50 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-slate-500 dark:focus:bg-slate-800"
+                className="h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] pl-10 pr-4 text-sm text-[var(--foreground)] placeholder:text-neutral-400 transition focus:border-[var(--border-strong)] focus:bg-[var(--surface)] focus:outline-none focus:ring-2 focus:ring-neutral-900/10 dark:focus:ring-white/10"
               />
             </div>
             <div className="flex flex-wrap items-center gap-2 sm:gap-3">
               <a
                 href="/api/inventory/csv-export"
                 title="アクティブなグループ・SKU の現在値を、取込と同じ列形式で出力します（UTF-8）。"
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-slate-500 dark:hover:bg-slate-700"
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm font-medium text-[var(--foreground)] transition hover:border-[var(--border-strong)] hover:bg-[var(--surface-muted)]"
               >
                 <IconDownload className="h-4 w-4" />
                 CSV エクスポート
               </a>
               <a
                 href="/api/inventory/csv-template"
-                className="text-xs font-medium text-slate-500 underline-offset-4 hover:text-slate-700 hover:underline dark:text-slate-400 dark:hover:text-slate-200"
+                className="text-xs font-medium text-neutral-500 underline-offset-4 hover:text-[var(--foreground)] hover:underline"
               >
                 テンプレート（サンプル行）
               </a>
@@ -225,7 +220,7 @@ export function InventoryListClient({ groups, summary }: Props) {
                 type="button"
                 onClick={() => fileRef.current?.click()}
                 disabled={pending}
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-800 shadow-sm transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-5 text-sm font-semibold text-[var(--foreground)] shadow-sm transition hover:bg-[var(--surface-muted)] disabled:opacity-50"
               >
                 <IconUpload className="h-4 w-4" />
                 CSV アップロード
@@ -248,12 +243,12 @@ export function InventoryListClient({ groups, summary }: Props) {
         {message ? (
           <div
             role="status"
-            className={`mt-6 rounded-2xl border px-5 py-4 text-sm leading-relaxed shadow-sm ${
+            className={`mt-5 rounded-2xl border px-4 py-3.5 text-sm leading-relaxed shadow-sm sm:px-5 sm:py-4 ${
               messageTone === "success"
-                ? "border-slate-300/90 bg-slate-100 text-slate-900 dark:border-slate-600 dark:bg-slate-800/90 dark:text-slate-100"
+                ? "border-[var(--border)] bg-[var(--surface-muted)] text-[var(--foreground)]"
                 : messageTone === "error"
                   ? "border-red-200/80 bg-red-50 text-red-900 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-100"
-                  : "border-slate-200 bg-slate-50 text-slate-800 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-200"
+                  : "border-[var(--border)] bg-[var(--surface-muted)] text-[var(--foreground)]"
             }`}
           >
             <pre className="whitespace-pre-wrap font-sans">{message}</pre>
@@ -269,29 +264,29 @@ export function InventoryListClient({ groups, summary }: Props) {
           onSuccess={() => router.refresh()}
         />
 
-        <section className="mt-14">
-          <div className="mb-6">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500">
+        <section className="mt-10">
+          <div className="mb-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-neutral-400 dark:text-neutral-500">
               Catalog
             </p>
-            <h2 className="mt-1 text-lg font-bold tracking-tight text-slate-900 dark:text-white">
+            <h2 className="mt-1 text-lg font-semibold tracking-tight text-[var(--foreground)]">
               商品グループ
             </h2>
-            <p className="mt-1.5 max-w-xl text-sm text-slate-500 dark:text-slate-400">
+            <p className="mt-1 max-w-xl text-sm text-neutral-500 dark:text-neutral-400">
               行を開いて SKU
               ごとの在庫とアラートを確認・更新できます。
             </p>
           </div>
           <div className="space-y-4">
             {filtered.length === 0 ? (
-              <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white/60 px-8 py-16 text-center dark:border-slate-700 dark:bg-slate-900/40">
-                <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800">
-                  <IconCube className="h-7 w-7 text-slate-400" />
+              <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--border-strong)] bg-white/60 px-8 py-16 text-center dark:border-[var(--border)] dark:bg-[var(--surface)]/40">
+                <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--surface-muted)] dark:bg-[var(--surface-muted)]">
+                  <IconCube className="h-7 w-7 text-neutral-400" />
                 </div>
-                <p className="text-base font-medium text-slate-800 dark:text-slate-200">
+                <p className="text-base font-medium text-neutral-800 dark:text-neutral-200">
                   表示できる商品がありません
                 </p>
-                <p className="mt-2 max-w-md text-sm text-slate-500 dark:text-slate-400">
+                <p className="mt-2 max-w-md text-sm text-neutral-500 dark:text-neutral-400">
                   検索条件を変えるか、上部の「テンプレート（サンプル行）」で形式を確認してから取り込んでください。
                 </p>
               </div>
@@ -309,8 +304,7 @@ export function InventoryListClient({ groups, summary }: Props) {
             )}
           </div>
         </section>
-      </div>
-    </main>
+    </div>
   );
 }
 
@@ -332,27 +326,25 @@ function SummaryCard({
     <div
       className={`group relative overflow-hidden rounded-2xl border p-5 shadow-card transition hover:shadow-card-hover ${
         warn
-          ? "border-amber-200/90 bg-gradient-to-br from-amber-50 to-orange-50/80 dark:border-amber-900/40 dark:from-amber-950/50 dark:to-orange-950/30"
-          : "border-slate-200/90 bg-white/95 shadow-sm ring-1 ring-slate-900/[0.02] backdrop-blur-sm dark:border-slate-800/90 dark:bg-slate-900/95 dark:ring-white/[0.03]"
+          ? "border-[var(--border-strong)] bg-[var(--surface-muted)] ring-1 ring-black/[0.04] dark:ring-white/[0.06]"
+          : "border-[var(--border)] bg-[var(--surface)]"
       }`}
     >
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500 dark:text-slate-400">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-neutral-400">
             {label}
           </p>
-          <p className="mt-2 text-3xl font-bold tabular-nums tracking-tight text-slate-900 dark:text-white">
+          <p className="mt-2 text-3xl font-semibold tabular-nums tracking-tight text-[var(--foreground)]">
             {value.toLocaleString("ja-JP")}
           </p>
-          <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
-            {hint}
-          </p>
+          <p className="mt-1.5 text-xs text-neutral-500">{hint}</p>
         </div>
         <div
           className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${
             warn
-              ? "bg-amber-500/15 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300"
-              : "bg-slate-200/80 text-slate-700 dark:bg-slate-700/50 dark:text-slate-200"
+              ? "bg-[var(--surface-muted)] text-[var(--foreground)] ring-1 ring-[var(--border-strong)]"
+              : "bg-[var(--surface-muted)] text-neutral-600 ring-1 ring-[var(--border)] dark:text-neutral-300"
           }`}
         >
           {icon}
@@ -366,20 +358,20 @@ function ProductGroupImageSlot({ groupCode }: { groupCode: string }) {
   return (
     <div className="w-full">
       <div
-        className="aspect-square w-full min-h-[5.5rem] overflow-hidden rounded-xl border-2 border-dashed border-slate-200 bg-slate-100/90 dark:border-slate-600 dark:bg-slate-800/60"
+        className="aspect-square w-full min-h-[5.5rem] overflow-hidden rounded-xl border-2 border-dashed border-[var(--border)] bg-[var(--surface-muted)]/90 dark:border-[var(--border)] dark:bg-[var(--surface-muted)]/60"
         aria-hidden
       >
         <div className="flex h-full flex-col items-center justify-center gap-1.5 px-2 py-3 text-center">
-          <IconImage className="h-7 w-7 shrink-0 text-slate-400 dark:text-slate-500" />
-          <span className="text-[10px] font-semibold leading-tight text-slate-600 dark:text-slate-300">
+          <IconImage className="h-7 w-7 shrink-0 text-neutral-400 dark:text-neutral-500" />
+          <span className="text-[10px] font-semibold leading-tight text-neutral-600 dark:text-neutral-300">
             商品画像
           </span>
-          <span className="line-clamp-2 px-1 font-mono text-[9px] text-slate-400 dark:text-slate-500">
+          <span className="line-clamp-2 px-1 font-mono text-[9px] text-neutral-400 dark:text-neutral-500">
             {groupCode}
           </span>
         </div>
       </div>
-      <p className="mt-1.5 text-center text-[9px] leading-tight text-slate-400 dark:text-slate-500">
+      <p className="mt-1.5 text-center text-[9px] leading-tight text-neutral-400 dark:text-neutral-500">
         将来ここに画像を表示
       </p>
     </div>
@@ -401,7 +393,7 @@ function GroupBlock({
   const panelId = `inventory-group-${group.id}`;
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-card dark:border-slate-800/80 dark:bg-slate-900">
+    <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-card">
       <div
         className={`grid grid-cols-[minmax(7.5rem,9.5rem)_1fr_auto] gap-x-4 gap-y-0 p-4 sm:p-5 ${open ? "pb-4 sm:pb-5" : ""}`}
       >
@@ -411,18 +403,18 @@ function GroupBlock({
 
         <div className="col-start-2 row-start-1 min-w-0 self-center py-1 pr-2">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-base font-semibold text-slate-900 dark:text-white">
+            <span className="text-base font-semibold text-[var(--foreground)]">
               {group.name}
             </span>
-            <span className="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-xs text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+            <span className="rounded-md bg-[var(--surface-muted)] px-2 py-0.5 font-mono text-xs text-neutral-600 dark:text-neutral-300">
               {group.group_code}
             </span>
-            <span className="rounded-full bg-slate-200/90 px-2.5 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-700/60 dark:text-slate-200">
+            <span className="rounded-full bg-[var(--surface-muted)] px-2.5 py-0.5 text-xs font-medium text-neutral-700 ring-1 ring-[var(--border)] dark:text-neutral-200">
               {skus.length} SKU
             </span>
-            <span className="text-xs text-slate-500 dark:text-slate-400">
+            <span className="text-xs text-neutral-500 dark:text-neutral-400">
               合計在庫{" "}
-              <span className="font-semibold tabular-nums text-slate-800 dark:text-slate-200">
+              <span className="font-semibold tabular-nums text-neutral-800 dark:text-neutral-200">
                 {totalQty.toLocaleString("ja-JP")}
               </span>
             </span>
@@ -435,7 +427,7 @@ function GroupBlock({
             onClick={() => setOpen((o) => !o)}
             aria-expanded={open}
             aria-controls={panelId}
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-600 transition hover:border-slate-300 hover:bg-slate-100 hover:text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-slate-500 dark:hover:bg-slate-700 dark:hover:text-white"
+            className="flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] text-neutral-600 transition hover:border-[var(--border-strong)] hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)] dark:border-[var(--border)] dark:bg-[var(--surface-muted)] dark:text-neutral-300 dark:hover:border-[var(--border-strong)] dark:hover:bg-[var(--surface-muted)] dark:hover:text-white"
           >
             <span className="sr-only">
               {open ? "SKU 一覧を閉じる" : "SKU 一覧を開く"}
@@ -451,12 +443,12 @@ function GroupBlock({
             id={panelId}
             role="region"
             aria-label={`${group.name} の SKU 一覧`}
-            className="col-span-2 col-start-2 row-start-2 mt-4 min-w-0 border-t border-slate-100 pt-4 dark:border-slate-800"
+            className="col-span-2 col-start-2 row-start-2 mt-4 min-w-0 border-t border-[var(--border)] pt-4 dark:border-[var(--border)]"
           >
-            <div className="overflow-x-auto rounded-xl border border-slate-100 dark:border-slate-800">
+            <div className="overflow-x-auto rounded-xl border border-[var(--border)] dark:border-[var(--border)]">
               <table className="w-full min-w-[760px] text-sm">
                 <thead>
-                  <tr className="border-b border-slate-100 bg-slate-50/90 text-left text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-800/40 dark:text-slate-400">
+                  <tr className="border-b border-[var(--border)] bg-[var(--surface-muted)]/90 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:border-[var(--border)] dark:bg-[var(--surface-muted)]/40 dark:text-neutral-400">
                     <th className="px-5 py-3">SKU</th>
                     <th className="px-5 py-3">JAN</th>
                     <th className="px-5 py-3">バリエーション</th>
@@ -464,7 +456,7 @@ function GroupBlock({
                     <th className="px-5 py-3 text-right">更新</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                <tbody className="divide-y divide-[var(--border)]">
                   {skus.map((s) => (
                     <SkuEditRow
                       key={s.id}
@@ -520,22 +512,22 @@ function SkuEditRow({
     <tr
       aria-label={`${sku.sku_code} の商品詳細へ（行をクリック）`}
       onClick={rowNavigate}
-      className={`cursor-pointer transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-800/30 ${
+      className={`cursor-pointer transition-colors hover:bg-[var(--surface-muted)]/80 dark:hover:bg-white/[0.04] ${
         inactive ? "opacity-60" : ""
       }`}
     >
-      <td className="px-5 py-3.5 font-mono text-xs font-medium text-slate-800 dark:text-slate-200">
+      <td className="px-5 py-3.5 font-mono text-xs font-medium text-neutral-800 dark:text-neutral-200">
         <span className="rounded px-0.5">{sku.sku_code}</span>
         {inactive ? (
-          <span className="ml-2 rounded bg-slate-200 px-1.5 text-[10px] font-sans font-normal text-slate-600 dark:bg-slate-700 dark:text-slate-400">
+          <span className="ml-2 rounded bg-neutral-200 px-1.5 dark:bg-[var(--surface-muted)] text-[10px] font-sans font-normal text-neutral-600 dark:bg-[var(--surface-muted)] dark:text-neutral-400">
             無効
           </span>
         ) : null}
       </td>
-      <td className="px-5 py-3.5 font-mono text-xs text-slate-600 dark:text-slate-400">
+      <td className="px-5 py-3.5 font-mono text-xs text-neutral-600 dark:text-neutral-400">
         {sku.jan_code}
       </td>
-      <td className="px-5 py-3.5 text-slate-700 dark:text-slate-300">
+      <td className="px-5 py-3.5 text-neutral-700 dark:text-neutral-300">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
           <span className="leading-relaxed">
             {[sku.name_variant, sku.color, sku.size].filter(Boolean).join(
@@ -552,7 +544,7 @@ function SkuEditRow({
         </div>
       </td>
       <td className="px-5 py-3.5 text-right">
-        <span className="text-base font-semibold tabular-nums text-slate-900 dark:text-white">
+        <span className="text-base font-semibold tabular-nums text-[var(--foreground)]">
           {sku.quantity.toLocaleString("ja-JP")}
         </span>
       </td>
@@ -561,7 +553,7 @@ function SkuEditRow({
           <input
             type="number"
             min={0}
-            className="h-9 w-[4.5rem] rounded-lg border border-slate-200 bg-white px-2 text-right font-mono text-sm tabular-nums text-slate-900 transition focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-400/25 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:border-slate-400"
+            className="h-9 w-[4.5rem] rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2 text-right font-mono text-sm tabular-nums text-[var(--foreground)] transition focus:border-[var(--border-strong)] focus:outline-none focus:ring-2 focus:ring-neutral-900/10 dark:focus:ring-white/10 dark:border-[var(--border)] dark:bg-[var(--surface-muted)] dark:text-[var(--foreground)] dark:focus:border-[var(--border-strong)]"
             value={val}
             onChange={(e) => setVal(e.target.value)}
           />
@@ -573,7 +565,7 @@ function SkuEditRow({
               if (Number.isNaN(n) || n < 0) return;
               onSave(n);
             }}
-            className="h-9 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-800 transition hover:bg-slate-50 disabled:opacity-40 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+            className="h-9 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 text-xs font-semibold text-neutral-800 transition hover:bg-[var(--surface-muted)] disabled:opacity-40 dark:text-[var(--foreground)]"
           >
             保存
           </button>
@@ -725,19 +717,19 @@ function BarcodeInboundPanel({
   }
 
   return (
-    <section className="mt-8 overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-card dark:border-slate-800/80 dark:bg-slate-900">
-      <div className="border-b border-slate-100 bg-gradient-to-r from-slate-100/90 to-slate-50 px-5 py-4 dark:border-slate-800 dark:from-slate-800/80 dark:to-slate-900">
+    <section className="mt-6 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-card">
+      <div className="border-b border-[var(--border)] bg-gradient-to-r from-[var(--surface-muted)] to-[var(--surface)] px-5 py-4 dark:border-[var(--border)] dark:from-[var(--surface-muted)] dark:to-[var(--surface)]">
         <div className="flex flex-wrap items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-slate-800 text-white shadow-sm dark:border-slate-600 dark:bg-slate-700">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--border)] bg-neutral-900 text-white shadow-sm dark:border-[var(--border)] dark:bg-neutral-800">
             <IconScan className="h-5 w-5" />
           </div>
           <div>
-            <h2 className="text-base font-semibold text-slate-900 dark:text-white">
+            <h2 className="text-base font-semibold text-[var(--foreground)]">
               バーコード入庫
             </h2>
-            <p className="text-xs text-slate-600 dark:text-slate-400">
+            <p className="text-xs text-neutral-600 dark:text-neutral-400">
               商品名または JAN を入力し、入庫数量を指定します（履歴区分:{" "}
-              <code className="rounded bg-white/60 px-1 font-mono text-[11px] dark:bg-slate-800/80">
+              <code className="rounded bg-white/60 px-1 font-mono text-[11px] dark:bg-[var(--surface-muted)]/80">
                 barcode_inbound
               </code>
               ）
@@ -747,10 +739,10 @@ function BarcodeInboundPanel({
       </div>
       <div className="grid gap-6 p-5 lg:grid-cols-2 lg:items-stretch lg:gap-8 lg:p-6">
         <div className="flex min-h-0 flex-col">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
             プレビュー
           </p>
-          <div className="flex min-h-[220px] flex-1 flex-col overflow-hidden rounded-xl border border-slate-200 bg-slate-950 shadow-inner dark:border-slate-700 lg:min-h-[280px]">
+          <div className="flex min-h-[220px] flex-1 flex-col overflow-hidden rounded-xl border border-[var(--border)] bg-slate-950 shadow-inner dark:border-[var(--border)] lg:min-h-[280px]">
             <video
               ref={videoRef}
               className={`w-full flex-1 object-cover ${scanning ? "min-h-[200px]" : "hidden h-0 min-h-0"}`}
@@ -759,10 +751,10 @@ function BarcodeInboundPanel({
             />
             {!scanning ? (
               <div className="flex flex-1 flex-col items-center justify-center gap-3 px-4 py-12 text-center">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-slate-700/80 bg-slate-900/80 text-slate-500">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-neutral-600/50 bg-neutral-900/85 dark:border-neutral-500/40 text-neutral-500">
                   <IconCamera className="h-7 w-7" />
                 </div>
-                <p className="max-w-[16rem] text-xs leading-relaxed text-slate-500">
+                <p className="max-w-[16rem] text-xs leading-relaxed text-neutral-500">
                   「カメラでスキャン」を押すと、ここにライブプレビューが表示されます
                 </p>
               </div>
@@ -771,19 +763,19 @@ function BarcodeInboundPanel({
         </div>
         <div className="grid min-w-0 grid-cols-1 content-start gap-x-4 gap-y-3 sm:grid-cols-2 sm:gap-y-3 lg:py-0">
           <div>
-            <label className="mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-400">
+            <label className="mb-1 block text-xs font-semibold text-neutral-600 dark:text-neutral-400">
               商品名
             </label>
             <input
               value={productName}
               onChange={(e) => setProductName(e.target.value)}
               onBlur={() => void tryFillJanFromQuery(productName, true)}
-              className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50/80 px-3 text-sm transition focus:border-slate-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-400/25 dark:border-slate-600 dark:bg-slate-800/50 dark:focus:border-slate-400 dark:focus:bg-slate-800"
+              className="h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface-muted)]/80 px-3 text-sm transition focus:border-[var(--border-strong)] focus:bg-[var(--surface)] focus:outline-none focus:ring-2 focus:ring-neutral-900/10 dark:focus:ring-white/10 dark:border-[var(--border)] dark:bg-[var(--surface-muted)]/50 dark:focus:border-[var(--border-strong)] dark:focus:bg-[var(--surface)]"
               placeholder="親商品名・バリエーション名など"
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-400">
+            <label className="mb-1 block text-xs font-semibold text-neutral-600 dark:text-neutral-400">
               入庫数量
             </label>
             <input
@@ -791,11 +783,11 @@ function BarcodeInboundPanel({
               min={1}
               value={qty}
               onChange={(e) => setQty(e.target.value)}
-              className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50/80 px-3 text-sm tabular-nums transition focus:border-slate-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-400/25 dark:border-slate-600 dark:bg-slate-800/50 dark:focus:border-slate-400 dark:focus:bg-slate-800"
+              className="h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface-muted)]/80 px-3 text-sm tabular-nums transition focus:border-[var(--border-strong)] focus:bg-[var(--surface)] focus:outline-none focus:ring-2 focus:ring-neutral-900/10 dark:focus:ring-white/10 dark:border-[var(--border)] dark:bg-[var(--surface-muted)]/50 dark:focus:border-[var(--border-strong)] dark:focus:bg-[var(--surface)]"
             />
           </div>
           <div className="sm:col-span-2">
-            <label className="mb-1 block text-xs font-semibold text-slate-600 dark:text-slate-400">
+            <label className="mb-1 block text-xs font-semibold text-neutral-600 dark:text-neutral-400">
               JAN コード
             </label>
             <div className="flex flex-wrap items-center gap-2">
@@ -803,7 +795,7 @@ function BarcodeInboundPanel({
                 value={jan}
                 onChange={(e) => setJan(e.target.value)}
                 onBlur={() => void tryFillJanFromQuery(jan, false)}
-                className="h-11 min-w-[min(100%,12rem)] flex-1 rounded-xl border border-slate-200 bg-slate-50/80 px-3 font-mono text-sm transition focus:border-slate-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-400/25 dark:border-slate-600 dark:bg-slate-800/50 dark:focus:border-slate-400 dark:focus:bg-slate-800"
+                className="h-11 min-w-[min(100%,12rem)] flex-1 rounded-xl border border-[var(--border)] bg-[var(--surface-muted)]/80 px-3 font-mono text-sm transition focus:border-[var(--border-strong)] focus:bg-[var(--surface)] focus:outline-none focus:ring-2 focus:ring-neutral-900/10 dark:focus:ring-white/10 dark:border-[var(--border)] dark:bg-[var(--surface-muted)]/50 dark:focus:border-[var(--border-strong)] dark:focus:bg-[var(--surface)]"
                 placeholder="4901234567890"
               />
               <div className="flex shrink-0 flex-nowrap items-center gap-2">
@@ -811,7 +803,7 @@ function BarcodeInboundPanel({
                   type="button"
                   disabled={disabled}
                   onClick={() => submitInbound()}
-                  className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-800 shadow-sm transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+                  className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-5 text-sm font-semibold text-neutral-800 shadow-sm transition hover:bg-[var(--surface-muted)] disabled:opacity-50 dark:border-[var(--border)] dark:bg-[var(--surface-muted)] dark:text-[var(--foreground)] dark:hover:bg-[var(--surface-muted)]"
                 >
                   <IconCheck className="h-4 w-4" />
                   入庫を確定
@@ -820,7 +812,7 @@ function BarcodeInboundPanel({
                   type="button"
                   disabled={disabled || scanning}
                   onClick={() => void startScan()}
-                  className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                  className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm font-medium text-neutral-700 transition hover:bg-[var(--surface-muted)] disabled:opacity-50 dark:border-[var(--border)] dark:bg-[var(--surface-muted)] dark:text-neutral-200 dark:hover:bg-[var(--surface-muted)]"
                 >
                   <IconCamera className="h-4 w-4" />
                   カメラでスキャン

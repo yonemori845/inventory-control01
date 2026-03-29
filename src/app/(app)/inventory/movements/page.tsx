@@ -2,6 +2,7 @@ import {
   MovementsTable,
   type MovementRow,
 } from "@/components/inventory/MovementsTable";
+import { AppPageMain } from "@/components/layout/app-page";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
 type SearchParams = Promise<{
@@ -60,9 +61,9 @@ export default async function MovementsPage({
 
   if (error) {
     return (
-      <main className="p-6">
+      <AppPageMain>
         <p className="text-red-600">取得に失敗: {error.message}</p>
-      </main>
+      </AppPageMain>
     );
   }
 
@@ -71,9 +72,12 @@ export default async function MovementsPage({
   if (filters.q.trim()) {
     const needle = filters.q.trim().toLowerCase();
     rows = rows.filter((m) => {
-      const s = Array.isArray(m.product_skus)
-        ? m.product_skus[0]
-        : m.product_skus;
+      const x = m.product_skus;
+      const s = !x
+        ? null
+        : Array.isArray(x)
+          ? (x[0] ?? null)
+          : x;
       if (!s) return false;
       return (
         s.sku_code.toLowerCase().includes(needle) ||
@@ -84,10 +88,21 @@ export default async function MovementsPage({
   }
 
   return (
-    <main className="p-6">
-      <p className="text-xs font-mono text-neutral-500">SCR-INV-HIST</p>
-      <h1 className="mt-1 text-xl font-semibold">入出庫履歴</h1>
-      <MovementsTable rows={rows} filters={filters} />
-    </main>
+    <AppPageMain className="pb-24">
+      <header className="border-b border-[var(--border)] pb-5">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-neutral-400">
+          Inventory
+        </p>
+        <h1 className="mt-1 text-2xl font-semibold tracking-tight text-[var(--foreground)] sm:text-3xl">
+          入出庫履歴
+        </h1>
+        <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-neutral-500">
+          SKU 単位の増減履歴を期間・理由・キーワードで絞り込みます。
+        </p>
+      </header>
+      <div className="mt-6">
+        <MovementsTable rows={rows} filters={filters} />
+      </div>
+    </AppPageMain>
   );
 }

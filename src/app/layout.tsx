@@ -2,10 +2,10 @@ import { SentryClientInit } from "@/components/monitoring/SentryClientInit";
 import { ServiceWorkerRegister } from "@/components/pwa/ServiceWorkerRegister";
 import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/react";
-import { DM_Sans, JetBrains_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
-const dmSans = DM_Sans({
+const inter = Inter({
   subsets: ["latin"],
   variable: "--font-sans",
   display: "swap",
@@ -27,7 +27,10 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0f172a",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f4f4f5" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+  ],
 };
 
 export default function RootLayout({
@@ -36,7 +39,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ja" className={`${dmSans.variable} ${jetbrainsMono.variable}`}>
+    <html lang="ja" className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <body className="font-sans antialiased min-h-screen">
         <SentryClientInit />
         <ServiceWorkerRegister />

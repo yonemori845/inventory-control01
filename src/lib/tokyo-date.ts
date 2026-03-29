@@ -43,3 +43,34 @@ export function tokyoDayRangeUtcIso(from: string, to: string): {
   ).toISOString();
   return { startIso, endExclusiveIso };
 }
+
+/** 暦日 `from`〜`to`（東京・端点含む）の日数 */
+export function daysBetweenInclusiveTokyo(from: string, to: string): number {
+  const start = new Date(`${from}T00:00:00+09:00`).getTime();
+  const end = new Date(`${to}T00:00:00+09:00`).getTime();
+  return Math.floor((end - start) / (24 * 60 * 60 * 1000)) + 1;
+}
+
+/** 東京暦で `iso` から `delta` 日ずらした YYYY-MM-DD */
+export function addCalendarDaysTokyo(iso: string, delta: number): string {
+  const t =
+    new Date(`${iso}T00:00:00+09:00`).getTime() +
+    delta * 24 * 60 * 60 * 1000;
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: TZ,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date(t));
+}
+
+/** 直前の同長期間（`from` の前日を終端とする） */
+export function previousPeriodInclusiveTokyo(
+  from: string,
+  to: string,
+): { from: string; to: string } {
+  const n = daysBetweenInclusiveTokyo(from, to);
+  const prevTo = addCalendarDaysTokyo(from, -1);
+  const prevFrom = addCalendarDaysTokyo(prevTo, -(n - 1));
+  return { from: prevFrom, to: prevTo };
+}

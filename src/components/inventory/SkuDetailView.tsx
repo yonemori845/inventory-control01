@@ -74,58 +74,65 @@ export function SkuDetailView({
     : "—";
   const stockStatus =
     row.quantity <= 0
-      ? { label: "在庫切れ", className: "bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-100" }
+      ? {
+          label: "在庫切れ",
+          className:
+            "bg-[var(--surface-muted)] text-[var(--foreground)] ring-1 ring-[var(--border)]",
+        }
       : alert
         ? {
             label: "要補充",
             className:
-              "bg-amber-100 text-amber-900 dark:bg-amber-950/60 dark:text-amber-200",
+              "bg-[var(--surface-muted)] text-[var(--foreground)] ring-1 ring-[var(--border-strong)]",
           }
         : {
             label: "在庫あり",
             className:
-              "bg-emerald-50 text-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-200",
+              "bg-[var(--surface-muted)] text-neutral-600 ring-1 ring-[var(--border)] dark:text-neutral-300",
           };
 
   return (
-    <main className="min-h-full bg-slate-100/80 p-5 dark:bg-slate-950 sm:p-8">
-      <div className="mx-auto max-w-6xl">
-        <header className="mb-8 flex items-start gap-3">
+    <div className="min-h-0">
+      <div className="mx-auto w-full max-w-6xl">
+        <header className="mb-6 flex items-start gap-3">
           <Link
             href="/inventory"
-            className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-slate-500 dark:hover:bg-slate-700 dark:hover:text-white"
+            className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)] text-neutral-600 shadow-sm transition hover:border-[var(--border-strong)] hover:text-[var(--foreground)] dark:text-neutral-300"
             aria-label="在庫一覧へ戻る"
           >
             <IconArrowLeft className="h-5 w-5" />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-neutral-400">
+              Inventory
+            </p>
+            <h1 className="mt-1 text-2xl font-semibold tracking-tight text-[var(--foreground)] sm:text-3xl">
               商品詳細
             </h1>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              商品情報と在庫一覧
+            <p className="mt-1 text-sm leading-snug text-neutral-500">
+              商品情報と在庫
             </p>
           </div>
         </header>
 
-        <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-card dark:border-slate-800/80 dark:bg-slate-900">
+        <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-card">
           {alert ? (
-            <div className="border-b border-amber-200/90 bg-amber-50/95 px-5 py-4 dark:border-amber-900/50 dark:bg-amber-950/35 sm:px-6">
-              <p className="text-sm font-medium text-amber-950 dark:text-amber-100">
+            <div className="border-b border-[var(--border)] bg-[var(--surface-muted)] px-5 py-4 sm:px-6">
+              <p className="text-sm font-medium text-[var(--foreground)]">
                 在庫アラート（発注点または安全在庫を下回っています）
                 {rec > 0 ? ` · 推奨発注 ${rec}` : ""}
               </p>
             </div>
           ) : null}
 
-          <div className="grid gap-8 p-5 sm:p-6 lg:grid-cols-12 lg:gap-10">
+          <div className="grid gap-6 p-5 sm:gap-8 sm:p-6 lg:grid-cols-12 lg:gap-8">
             <section className="lg:col-span-5">
-              <h2 className="mb-4 text-base font-semibold text-slate-800 dark:text-slate-100">
+              <h2 className="mb-4 text-base font-semibold text-[var(--foreground)]">
                 商品画像
               </h2>
-              <div className="overflow-hidden rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/80 dark:border-slate-600 dark:bg-slate-800/40">
+              <div className="overflow-hidden rounded-xl border-2 border-dashed border-[var(--border)] bg-[var(--surface-muted)]">
                 {imageUrl ? (
-                  <div className="relative aspect-square w-full bg-slate-100 dark:bg-slate-800">
+                  <div className="relative aspect-square w-full bg-[var(--surface-muted)]">
                     <Image
                       src={imageUrl}
                       alt=""
@@ -136,12 +143,12 @@ export function SkuDetailView({
                   </div>
                 ) : (
                   <div className="flex aspect-square w-full flex-col items-center justify-center gap-2 px-4 py-12 text-center">
-                    <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                    <span className="text-sm font-medium text-neutral-500">
                       画像が未設定です
                     </span>
-                    <span className="text-xs text-slate-400 dark:text-slate-500">
+                    <span className="text-xs text-neutral-400">
                       Storage に配置し{" "}
-                      <code className="rounded bg-slate-200/80 px-1 font-mono text-[10px] dark:bg-slate-700/80">
+                      <code className="rounded bg-[var(--surface-muted)] px-1 font-mono text-[10px] ring-1 ring-[var(--border)]">
                         image_path
                       </code>{" "}
                       にパスを保存してください
@@ -150,10 +157,10 @@ export function SkuDetailView({
                 )}
               </div>
               <SkuImageChangeButton />
-              <p className="mt-3 text-center text-[11px] leading-relaxed text-slate-400 dark:text-slate-500">
+              <p className="mt-3 text-center text-[11px] leading-relaxed text-neutral-400">
                 対応形式: JPEG、PNG、WebP（最大 5MB）
                 <br />
-                <span className="text-slate-400/90 dark:text-slate-500">
+                <span className="text-neutral-400">
                   ※ アップロード UI は Storage 連携後に有効化予定です
                 </span>
               </p>
@@ -161,15 +168,15 @@ export function SkuDetailView({
 
             <div className="space-y-4 lg:col-span-7">
               <FieldBlock label="商品名">
-                <div className="rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-2.5 text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-800/50 dark:text-slate-100">
+                <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-2.5 text-sm text-[var(--foreground)]">
                   <span className="font-medium">{productTitle}</span>
                   {!row.is_active ? (
-                    <span className="ml-2 rounded-md bg-slate-200 px-1.5 py-0.5 text-[10px] font-normal text-slate-600 dark:bg-slate-700 dark:text-slate-400">
+                    <span className="ml-2 rounded-md bg-[var(--surface-muted)] px-1.5 py-0.5 text-[10px] font-normal text-neutral-600 ring-1 ring-[var(--border)]">
                       無効 SKU
                     </span>
                   ) : null}
                   {subtitleParts.length ? (
-                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                    <p className="mt-1 text-xs text-neutral-500">
                       {subtitleParts.join(" · ")}
                     </p>
                   ) : null}
@@ -177,43 +184,43 @@ export function SkuDetailView({
               </FieldBlock>
               <div className="grid gap-4 sm:grid-cols-2">
                 <FieldBlock label="サイズ">
-                  <div className="rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-2.5 text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-800/50 dark:text-slate-100">
+                  <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-2.5 text-sm text-[var(--foreground)]">
                     {row.size?.trim() || "—"}
                   </div>
                 </FieldBlock>
                 <FieldBlock label="商品コード">
-                  <div className="rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-2.5 font-mono text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-800/50 dark:text-slate-100">
+                  <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-2.5 font-mono text-sm text-[var(--foreground)]">
                     {group?.group_code ?? "—"}
                   </div>
                 </FieldBlock>
               </div>
               <FieldBlock label="JAN コード">
-                <div className="rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-2.5 font-mono text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-800/50 dark:text-slate-100">
+                <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-2.5 font-mono text-sm text-[var(--foreground)]">
                   {row.jan_code}
                 </div>
               </FieldBlock>
               <div className="grid gap-4 sm:grid-cols-2">
                 <FieldBlock label="税抜価格">
-                  <div className="rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-2.5 text-sm font-medium tabular-nums text-slate-900 dark:border-slate-600 dark:bg-slate-800/50 dark:text-slate-100">
+                  <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-2.5 text-sm font-medium tabular-nums text-[var(--foreground)]">
                     {formatYen(Math.round(exSafe))}
                   </div>
                 </FieldBlock>
                 <FieldBlock label="税込価格">
-                  <div className="rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-2.5 text-sm font-medium tabular-nums text-slate-900 dark:border-slate-600 dark:bg-slate-800/50 dark:text-slate-100">
+                  <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-2.5 text-sm font-medium tabular-nums text-[var(--foreground)]">
                     {formatYen(inc)}
                   </div>
                 </FieldBlock>
               </div>
-              <p className="text-[11px] text-slate-400 dark:text-slate-500">
+              <p className="text-[11px] text-neutral-400">
                 SKU:{" "}
-                <span className="font-mono text-slate-500 dark:text-slate-400">
+                <span className="font-mono text-neutral-500">
                   {row.sku_code}
                 </span>
                 {" · "}
                 発注点 {row.reorder_point} / 安全在庫 {row.safety_stock}
               </p>
 
-              <div className="border-t border-slate-100 pt-4 dark:border-slate-800" />
+              <div className="border-t border-[var(--border)] pt-4" />
 
               <FieldBlock label="在庫数量">
                 <SkuDetailQuantityForm
@@ -222,17 +229,17 @@ export function SkuDetailView({
                 />
               </FieldBlock>
               <FieldBlock label="最終入庫日">
-                <div className="rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-2.5 text-sm text-slate-900 dark:border-slate-600 dark:bg-slate-800/50 dark:text-slate-100">
+                <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-2.5 text-sm text-[var(--foreground)]">
                   {lastInboundLabel}
                   {lastInboundAt ? (
-                    <span className="ml-2 text-xs text-slate-400 dark:text-slate-500">
+                    <span className="ml-2 text-xs text-neutral-400">
                       （在庫が増加した直近の履歴）
                     </span>
                   ) : null}
                 </div>
               </FieldBlock>
-              <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50/50 px-3 py-3 dark:border-slate-800 dark:bg-slate-800/30">
-                <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-3">
+                <span className="text-xs font-semibold uppercase tracking-wider text-neutral-500">
                   在庫ステータス
                 </span>
                 <span
@@ -245,7 +252,7 @@ export function SkuDetailView({
           </div>
         </div>
       </div>
-    </main>
+    </div>
   );
 }
 
@@ -258,7 +265,7 @@ function FieldBlock({
 }) {
   return (
     <div>
-      <div className="mb-1.5 text-xs font-semibold text-slate-600 dark:text-slate-400">
+      <div className="mb-1.5 text-xs font-semibold text-neutral-500">
         {label}
       </div>
       {children}
@@ -272,7 +279,7 @@ function SkuImageChangeButton() {
       type="button"
       disabled
       title="Storage 連携後に利用可能になる予定です"
-      className="mt-4 flex w-full items-center justify-center rounded-xl border border-slate-200 bg-white py-2.5 text-sm font-semibold text-slate-600 shadow-sm opacity-60 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300"
+      className="mt-4 flex w-full items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)] py-2.5 text-sm font-semibold text-neutral-600 shadow-sm opacity-60 dark:text-neutral-300"
     >
       画像を変更
     </button>

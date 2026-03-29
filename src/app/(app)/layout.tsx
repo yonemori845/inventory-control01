@@ -1,3 +1,4 @@
+import { AppMainColumn } from "@/components/layout/AppMainColumn";
 import { AppShell } from "@/components/layout/AppShell";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 
@@ -12,6 +13,8 @@ export default async function AppLayout({
   } = await supabase.auth.getUser();
 
   return (
-    <AppShell userEmail={user?.email ?? null}>{children}</AppShell>
+    <AppShell userEmail={user?.email ?? null}>
+      <AppMainColumn>{children}</AppMainColumn>
+    </AppShell>
   );
 }
