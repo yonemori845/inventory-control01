@@ -10,7 +10,9 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "test:e2e": "playwright test",
-    "seed:dummy": "node scripts/seed-dummy-data.mjs"
+    "seed:dummy": "node scripts/seed-dummy-data.mjs",
+    "seed:laminator": "node scripts/seed-laminator-template.mjs",
+    "seed:apparel": "node scripts/seed-apparel-dummy.mjs"
   },
   "dependencies": {
     "@sentry/react": "^10.45.0",

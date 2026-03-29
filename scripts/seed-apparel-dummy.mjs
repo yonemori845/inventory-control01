@@ -1,10 +1,10 @@
 /**
- * 業務データを削除し、ダミー在庫 200 SKU・過去約1か月に均等分布した注文 ~500 件を投入する。
- * 在庫ゼロ・安全在庫未満・発注点のみアラートが混在するよう SKU 設計と注文の偏りで調整。
+ * 業務データを全削除し、アパレル（衣類）向けダミー在庫 300 SKU・過去約1か月に均等分布した注文 100 件を投入。
+ * 在庫0・安全在庫未満・発注点のみアラートが混在するよう SKU 初期値と注文の偏りで調整。
+ * 親商品名は小売の一般的なカテゴリ表現（シャツ・パンツ・アウター等）をベースに構成。
  *
  * 必要: .env.local に NEXT_PUBLIC_SUPABASE_URL と SUPABASE_SERVICE_ROLE_KEY
- *
- * 実行: npm run seed:dummy
+ * 実行: npm run seed:apparel
  */
 import { createClient } from "@supabase/supabase-js";
 import fs from "fs";
@@ -40,7 +40,10 @@ const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const TAX_RATE = Number(process.env.NEXT_PUBLIC_DEFAULT_TAX_RATE ?? 0.1);
 
-const N_ORDERS = 500;
+const N_SKUS = 300;
+const N_ORDERS = 100;
+const N_GROUPS = 25;
+const SKUS_PER_GROUP = 12;
 
 if (!url || !serviceKey) {
   console.error(
@@ -89,6 +92,18 @@ function mulberry32(a) {
   };
 }
 
+/** EAN-13（日本の JAN 13 桁）チェックデジット */
+function jan13FromBase12(base12) {
+  const s = String(base12).padStart(12, "0").slice(-12);
+  let sum = 0;
+  for (let i = 0; i < 12; i++) {
+    const d = Number(s[i]);
+    sum += i % 2 === 0 ? d : d * 3;
+  }
+  const check = (10 - (sum % 10)) % 10;
+  return s + check;
+}
+
 async function deleteAllBusinessData() {
   const tables = [
     "order_lines",
@@ -107,7 +122,6 @@ async function deleteAllBusinessData() {
   }
 }
 
-/** 配列を適度な塊で insert（ペイロード上限回避） */
 async function insertChunked(table, rows, chunk = 400) {
   for (let i = 0; i < rows.length; i += chunk) {
     const slice = rows.slice(i, i + chunk);
@@ -116,45 +130,214 @@ async function insertChunked(table, rows, chunk = 400) {
   }
 }
 
+/**
+ * 親商品（アパレル小売でよくあるカテゴリ名・シリーズ風の呼び方）
+ * ※実在の商標・商品名の転載ではなく、授業用ダミーとしての一般的表現。
+ */
+const APPAREL_GROUPS = [
+  {
+    code: "APP-01",
+    name: "オックスフォードシャツ（レギュラーカラー）",
+    desc: "通年使える定番コットンシャツ。ビジネスカジュアル向け。",
+  },
+  {
+    code: "APP-02",
+    name: "ギンガムチェックシャツ",
+    desc: "春夏向けの清涼感のあるチェック柄シャツ。",
+  },
+  {
+    code: "APP-03",
+    name: "カジュアルクルーネックTシャツ",
+    desc: "綿混のベーシック半袖。デイリーユース。",
+  },
+  {
+    code: "APP-04",
+    name: "デニムジャケット（ルーズフィット）",
+    desc: "羽織りとして使いやすいライトアウター。",
+  },
+  {
+    code: "APP-05",
+    name: "形態安定 長袖ワイシャツ",
+    desc: "アイロン負担を抑えたビジネス向け長袖。",
+  },
+  {
+    code: "APP-06",
+    name: "スキニーフィットジーンズ",
+    desc: "ストレッチ入りの細身デニム。",
+  },
+  {
+    code: "APP-07",
+    name: "イージーケア テーパードスラックス",
+    desc: "オフィスにも合うテーパードシルエットのスラックス。",
+  },
+  {
+    code: "APP-08",
+    name: "ウルトラライトダウンジャケット",
+    desc: "軽量で持ち運びしやすいダウンアウター。",
+  },
+  {
+    code: "APP-09",
+    name: "ヒートテック クルーネック（極暖）",
+    desc: "防寒インナー。冬場の重ね着に。",
+  },
+  {
+    code: "APP-10",
+    name: "吸汗速乾 ポロシャツ",
+    desc: "スポーツ・ゴルフにも使えるドライ系ポロ。",
+  },
+  {
+    code: "APP-11",
+    name: "チノショートパンツ",
+    desc: "夏のカジュアル向けショーツ。",
+  },
+  {
+    code: "APP-12",
+    name: "スウェットプルオーバーパーカー",
+    desc: "裏起毛のフーディ。春秋の定番。",
+  },
+  {
+    code: "APP-13",
+    name: "モールスキンカバーオール",
+    desc: "ワークテイストのジャケット。",
+  },
+  {
+    code: "APP-14",
+    name: "ワイドテーパードチノパンツ",
+    desc: "ゆったりシルエットのチノ。",
+  },
+  {
+    code: "APP-15",
+    name: "コンパクトジャケット（撥水）",
+    desc: "小雨に強いショート丈アウター。",
+  },
+  {
+    code: "APP-16",
+    name: "リブクルーネック長袖Tシャツ",
+    desc: "レイヤード用の薄手ロンT。",
+  },
+  {
+    code: "APP-17",
+    name: "ストレッチスリムジーンズ",
+    desc: "動きやすいストレッチデニム。",
+  },
+  {
+    code: "APP-18",
+    name: "ミドルゲージニットカーディガン",
+    desc: "オフィスでも着られるニット羽織り。",
+  },
+  {
+    code: "APP-19",
+    name: "ドライEX 半袖Tシャツ",
+    desc: "速乾性の高いスポーツカジュアル向け。",
+  },
+  {
+    code: "APP-20",
+    name: "コットンブロード レギュラーシャツ",
+    desc: "さらりとした肌触りの長袖シャツ。",
+  },
+  {
+    code: "APP-21",
+    name: "テーパードアンクルパンツ",
+    desc: "足首が見える丈のスラックス・カジュアル両用。",
+  },
+  {
+    code: "APP-22",
+    name: "フリースジップジャケット",
+    desc: "アウトドア・ルームウェアにも。",
+  },
+  {
+    code: "APP-23",
+    name: "タンクトップ（インナー）",
+    desc: "重ね着用のノースリーブ。",
+  },
+  {
+    code: "APP-24",
+    name: "カーゴパンツ（イージー）",
+    desc: "ポケット多めのリラックスパンツ。",
+  },
+  {
+    code: "APP-25",
+    name: "フランネルチェックシャツ",
+    desc: "秋冬向けの温かみのあるネルシャツ。",
+  },
+];
+
+const VARIANTS = [
+  "定番",
+  "スリム",
+  "レギュラー",
+  "ルーズ",
+  "ショート丈",
+  "ロング丈",
+  "無地",
+  "ボーダー",
+  "刺繍ワンポイント",
+  "プリント",
+  "UVカット",
+  "吸水速乾",
+];
+
+const COLORS = [
+  "ホワイト",
+  "ブラック",
+  "ネイビー",
+  "チャコール",
+  "ベージュ",
+  "オリーブ",
+  "ワインレッド",
+  "サックス",
+  "ブラウン",
+  "グレー",
+  "アイボリー",
+  "カーキ",
+];
+
+const SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
+
 function skuTier(skuIndex) {
-  if (skuIndex <= 12) return "stockout";
-  if (skuIndex <= 35) return "below_safety";
-  if (skuIndex <= 52) return "reorder_only";
+  if (skuIndex <= 15) return "stockout";
+  if (skuIndex <= 45) return "below_safety";
+  if (skuIndex <= 75) return "reorder_only";
   return "normal";
 }
 
-function buildSkuRow(product_group_id, skuIndex, rand) {
+function buildSkuRow(product_group_id, skuIndex, rand, variantIdx) {
   const tier = skuTier(skuIndex);
-  const unit = 800 + Math.floor(rand() * 4200);
+  const unit = 490 + Math.floor(rand() * 11500);
   let qty;
   let reorder_point;
   let safety_stock;
 
   if (tier === "stockout") {
-    qty = 22 + Math.floor(rand() * 20);
-    safety_stock = 10;
-    reorder_point = 8;
-  } else if (tier === "below_safety") {
-    qty = 130 + Math.floor(rand() * 50);
-    safety_stock = 50;
-    reorder_point = 20;
-  } else if (tier === "reorder_only") {
-    qty = 95 + Math.floor(rand() * 35);
+    qty = 6 + Math.floor(rand() * 18);
     safety_stock = 12;
-    reorder_point = 55;
+    reorder_point = 10;
+  } else if (tier === "below_safety") {
+    qty = 55 + Math.floor(rand() * 45);
+    safety_stock = 48;
+    reorder_point = 22;
+  } else if (tier === "reorder_only") {
+    qty = 48 + Math.floor(rand() * 42);
+    safety_stock = 14;
+    reorder_point = 52;
   } else {
-    qty = 380 + Math.floor(rand() * 220);
-    safety_stock = 18 + Math.floor(rand() * 12);
-    reorder_point = 55 + Math.floor(rand() * 35);
+    qty = 120 + Math.floor(rand() * 380);
+    safety_stock = 20 + Math.floor(rand() * 25);
+    reorder_point = 45 + Math.floor(rand() * 40);
   }
+
+  const g = Math.floor((skuIndex - 1) / SKUS_PER_GROUP);
+  const v = VARIANTS[variantIdx % VARIANTS.length];
+  const c = COLORS[(skuIndex + variantIdx) % COLORS.length];
+  const z = SIZES[(skuIndex - 1) % SIZES.length];
 
   return {
     product_group_id,
-    sku_code: `DMY-SKU-${String(skuIndex).padStart(5, "0")}`,
-    jan_code: String(4519900000000 + skuIndex),
-    name_variant: `バリエーション ${(skuIndex - 1) % 8 + 1}`,
-    color: ["BK", "NV", "GY", "WH", "BE", "RD"][(skuIndex - 1) % 6],
-    size: ["S", "M", "L", "XL"][(skuIndex - 1) % 4],
+    sku_code: `APP-${String(g + 1).padStart(2, "0")}-${String((skuIndex - 1) % SKUS_PER_GROUP + 1).padStart(3, "0")}`,
+    jan_code: jan13FromBase12(451090000000 + skuIndex),
+    name_variant: v,
+    color: c,
+    size: z,
     quantity: qty,
     reorder_point,
     safety_stock,
@@ -166,16 +349,16 @@ function buildSkuRow(product_group_id, skuIndex, rand) {
 function pickSkuWeighted(available, stock, rand, orderIndex, tierSets) {
   if (available.length === 0) return null;
   const { stockoutIds, belowIds, reorderIds } = tierSets;
-  const early = orderIndex < 260;
-  const mid = orderIndex < 420;
+  const early = orderIndex < 35;
+  const mid = orderIndex < 70;
 
   const pool = [];
   for (const s of available) {
     let w = 1;
     const id = s.id;
-    if (early && stockoutIds.has(id)) w = 14;
-    else if (mid && belowIds.has(id)) w = 5;
-    else if (reorderIds.has(id)) w = 3;
+    if (early && stockoutIds.has(id)) w = 22;
+    else if (mid && belowIds.has(id)) w = 8;
+    else if (reorderIds.has(id)) w = 4;
     pool.push({ s, w });
   }
   let total = pool.reduce((a, b) => a + b.w, 0);
@@ -188,33 +371,34 @@ function pickSkuWeighted(available, stock, rand, orderIndex, tierSets) {
 }
 
 async function main() {
-  const rand = mulberry32(20260329);
+  const rand = mulberry32(202603291);
   const runSuffix = crypto.randomUUID().replace(/-/g, "").slice(0, 10);
 
-  console.log("既存の categories / product_groups / product_skus / movements / orders を削除しています…");
+  console.log(
+    "既存の categories / product_groups / product_skus / movements / orders を削除しています…",
+  );
   await deleteAllBusinessData();
 
   const categoryId = crypto.randomUUID();
   const { error: catErr } = await supabase.from("categories").insert({
     id: categoryId,
-    name: "ダミー商品カテゴリ",
+    name: "アパレル・衣料",
     parent_id: null,
   });
   if (catErr) throw new Error(`categories: ${catErr.message}`);
 
-  const nGroups = 25;
-  const skusPerGroup = 8;
   const groupIds = [];
   const groupRows = [];
 
-  for (let g = 0; g < nGroups; g++) {
+  for (let g = 0; g < N_GROUPS; g++) {
+    const meta = APPAREL_GROUPS[g];
     const gid = crypto.randomUUID();
     groupIds.push(gid);
     groupRows.push({
       id: gid,
-      group_code: `DMY-G${String(g + 1).padStart(2, "0")}`,
-      name: `ダミー商品グループ ${g + 1}`,
-      description: `シード用 ${g + 1}/${nGroups}`,
+      group_code: meta.code,
+      name: meta.name,
+      description: meta.desc,
       category_id: categoryId,
       sort_order: g,
       is_active: true,
@@ -226,11 +410,15 @@ async function main() {
 
   const skuRows = [];
   let skuIndex = 0;
-  for (let g = 0; g < nGroups; g++) {
-    for (let s = 0; s < skusPerGroup; s++) {
+  for (let g = 0; g < N_GROUPS; g++) {
+    for (let s = 0; s < SKUS_PER_GROUP; s++) {
       skuIndex += 1;
-      skuRows.push(buildSkuRow(groupIds[g], skuIndex, rand));
+      skuRows.push(buildSkuRow(groupIds[g], skuIndex, rand, s));
     }
+  }
+
+  if (skuRows.length !== N_SKUS) {
+    throw new Error(`SKU 件数不一致: ${skuRows.length}`);
   }
 
   const { data: insertedSkus, error: skuErr } = await supabase
@@ -239,7 +427,7 @@ async function main() {
     .select("id, sku_code, unit_price_ex_tax, quantity");
 
   if (skuErr) throw new Error(`product_skus: ${skuErr.message}`);
-  console.log(`在庫 SKU ${insertedSkus.length} 件を登録しました。`);
+  console.log(`在庫 SKU ${insertedSkus.length} 件を登録しました（アパレル親商品 ${N_GROUPS}）。`);
 
   const skus = insertedSkus;
   const stock = new Map(skus.map((x) => [x.id, x.quantity]));
@@ -259,14 +447,13 @@ async function main() {
   const monthMs = 30 * 24 * 60 * 60 * 1000;
   const tStart = now - monthMs;
 
-  /** 注文を先にすべてメモリ上で組み立て（在庫整合） */
   const pending = [];
   const nOrders = N_ORDERS;
 
   for (let i = 0; i < nOrders; i++) {
     const t = new Date(tStart + ((i + 0.5) / nOrders) * monthMs).toISOString();
 
-    const nLines = 1 + Math.floor(rand() * 4);
+    const nLines = 1 + Math.floor(rand() * 3);
     const available = skus.filter((s) => (stock.get(s.id) ?? 0) > 0);
 
     const lines = [];
@@ -279,7 +466,7 @@ async function main() {
       if (!pick) break;
       used.add(pick.id);
 
-      const q = 1 + Math.floor(rand() * 6);
+      const q = 1 + Math.floor(rand() * 8);
       const avail = stock.get(pick.id) ?? 0;
       if (avail < 1) continue;
       const qty = Math.min(q, avail);
@@ -292,7 +479,7 @@ async function main() {
 
     if (lines.length === 0) {
       const pick = available[0] ?? skus[0];
-      const qty = Math.min(3, Math.max(1, stock.get(pick.id) ?? 1));
+      const qty = Math.min(4, Math.max(1, stock.get(pick.id) ?? 1));
       lines.push({
         sku_id: pick.id,
         quantity: qty,
@@ -306,7 +493,7 @@ async function main() {
     }
 
     const totals = orderTotalsFromLines(lines);
-    const orderNumber = `ORD-DUMMY-${String(i + 1).padStart(5, "0")}-${runSuffix}`;
+    const orderNumber = `ORD-APP-${String(i + 1).padStart(4, "0")}-${runSuffix}`;
 
     for (const ln of lines) {
       const prev = stock.get(ln.sku_id) ?? 0;
@@ -388,7 +575,9 @@ async function main() {
     const ss = Number(s.safety_stock);
     return q <= rp || q < ss;
   };
-  const alerts = (allSkuState ?? []).filter(isAlert).sort((a, b) => a.quantity - b.quantity);
+  const alerts = (allSkuState ?? [])
+    .filter(isAlert)
+    .sort((a, b) => a.quantity - b.quantity);
 
   console.log("--- 在庫サマリ（登録後）---");
   console.log("在庫 0 の SKU 数:", zero);
