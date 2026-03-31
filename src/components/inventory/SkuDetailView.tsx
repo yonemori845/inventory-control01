@@ -7,7 +7,6 @@ import {
   priceIncTax,
 } from "@/lib/pricing";
 import Image from "next/image";
-import Link from "next/link";
 import type { ReactNode } from "react";
 import { SkuDetailQuantityForm } from "./SkuDetailQuantityForm";
 
@@ -103,25 +102,16 @@ export function SkuDetailView({
   return (
     <div className="min-h-0">
       <div className="mx-auto w-full max-w-6xl">
-        <header className="mb-6 flex items-start gap-3">
-          <Link
-            href="/inventory"
-            className="btn-icon mt-0.5 shrink-0 text-neutral-600 dark:text-neutral-300"
-            aria-label="在庫一覧へ戻る"
-          >
-            <IconArrowLeft className="h-5 w-5" />
-          </Link>
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-neutral-400">
-              Inventory
-            </p>
-            <h1 className="mt-1 text-2xl font-semibold tracking-tight text-[var(--foreground)] sm:text-3xl">
-              商品詳細
-            </h1>
-            <p className="mt-1 text-sm leading-snug text-neutral-500">
-              商品情報と在庫
-            </p>
-          </div>
+        <header className="mb-6">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-neutral-400">
+            Inventory
+          </p>
+          <h1 className="mt-1 text-2xl font-semibold tracking-tight text-[var(--foreground)] sm:text-3xl">
+            商品詳細
+          </h1>
+          <p className="mt-1 text-sm leading-snug text-neutral-500">
+            商品情報と在庫
+          </p>
         </header>
 
         <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-card">
@@ -300,23 +290,5 @@ function SkuImageChangeButton() {
     >
       画像を変更
     </button>
-  );
-}
-
-function IconArrowLeft({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden
-    >
-      <path d="m15 18-6-6 6-6" />
-    </svg>
   );
 }
