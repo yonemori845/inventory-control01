@@ -19,9 +19,16 @@ import {
   getCameraPrerequisiteMessage,
 } from "@/lib/media/camera-access-help";
 import { getScanCameraStream } from "@/lib/media/scan-camera";
-import Link from "next/link";
 import type { MouseEvent, ReactNode } from "react";
-import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
+import { flushSync } from "react-dom";
 import { useRouter } from "next/navigation";
 
 export type SkuRow = {
@@ -58,9 +65,79 @@ type Props = {
   summary: Summary;
 };
 
+/** バーコード入庫の絞り込み：グループ名・コード、SKU・JAN・バリエーション・色・サイズなど */
+function groupMatchesInboundNeedle(g: GroupRow, needle: string): boolean {
+  const n = needle.trim().toLowerCase();
+  if (!n) return false;
+  if (g.name.toLowerCase().includes(n) || g.group_code.toLowerCase().includes(n)) {
+    return true;
+  }
+  for (const s of g.product_skus ?? []) {
+    if (!s.is_active) continue;
+    const hay = [
+      s.sku_code,
+      s.jan_code,
+      s.name_variant ?? "",
+      s.color ?? "",
+      s.size ?? "",
+    ]
+      .join(" ")
+      .toLowerCase();
+    if (hay.includes(n)) return true;
+  }
+  return false;
+}
+
+function filterGroupsForInboundFields(
+  groups: GroupRow[],
+  productRaw: string,
+  janRaw: string,
+): GroupRow[] {
+  const p = productRaw.trim().toLowerCase();
+  const j = janRaw.trim().toLowerCase();
+  if (!p && !j) return groups;
+  return groups.filter((g) => {
+    if (p && groupMatchesInboundNeedle(g, p)) return true;
+    if (j && groupMatchesInboundNeedle(g, j)) return true;
+    return false;
+  });
+}
+
+/** 確定 JAN に対応する SKU をクライアント一覧から解決（確認ダイアログ用） */
+function lookupSkuContextByResolvedJan(
+  groups: GroupRow[],
+  resolvedJan: string,
+): {
+  groupName: string;
+  groupCode: string;
+  skuCode: string;
+  variantLabel: string;
+} | null {
+  const target = resolvedJan.trim();
+  if (!target) return null;
+  for (const g of groups) {
+    for (const s of g.product_skus ?? []) {
+      if (!s.is_active) continue;
+      if (s.jan_code.trim() !== target) continue;
+      const variantLabel = [s.name_variant, s.color, s.size]
+        .filter((x) => x != null && String(x).trim() !== "")
+        .map((x) => String(x).trim())
+        .join(" · ");
+      return {
+        groupName: g.name,
+        groupCode: g.group_code,
+        skuCode: s.sku_code,
+        variantLabel: variantLabel.length > 0 ? variantLabel : "—",
+      };
+    }
+  }
+  return null;
+}
+
 export function InventoryListClient({ groups, summary }: Props) {
   const router = useRouter();
-  const [q, setQ] = useState("");
+  const [inboundCatalogProduct, setInboundCatalogProduct] = useState("");
+  const [inboundCatalogJan, setInboundCatalogJan] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [messageTone, setMessageTone] = useState<"info" | "success" | "error">(
     "info",
@@ -68,32 +145,16 @@ export function InventoryListClient({ groups, summary }: Props) {
   const [pending, startTransition] = useTransition();
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const filtered = useMemo(() => {
-    const needle = q.trim().toLowerCase();
-    if (!needle) return groups;
-    return groups
-      .map((g) => {
-        const skus = (g.product_skus ?? []).filter((s) => {
-          const hay = [
-            g.name,
-            g.group_code,
-            s.sku_code,
-            s.jan_code,
-            s.name_variant ?? "",
-          ]
-            .join(" ")
-            .toLowerCase();
-          return hay.includes(needle);
-        });
-        const groupHit =
-          g.name.toLowerCase().includes(needle) ||
-          g.group_code.toLowerCase().includes(needle);
-        if (groupHit) return { ...g, product_skus: g.product_skus ?? [] };
-        if (skus.length) return { ...g, product_skus: skus };
-        return null;
-      })
-      .filter(Boolean) as GroupRow[];
-  }, [groups, q]);
+  const onInboundCatalogFilter = useCallback((product: string, jan: string) => {
+    setInboundCatalogProduct(product);
+    setInboundCatalogJan(jan);
+  }, []);
+
+  const catalogGroups = useMemo(
+    () =>
+      filterGroupsForInboundFields(groups, inboundCatalogProduct, inboundCatalogJan),
+    [groups, inboundCatalogProduct, inboundCatalogJan],
+  );
 
   function runMsg(p: Promise<{ ok: boolean; message?: string }>) {
     startTransition(() => {
@@ -138,25 +199,49 @@ export function InventoryListClient({ groups, summary }: Props) {
 
   return (
     <div className="relative min-h-0">
-      <header className="border-b border-[var(--border)] pb-5">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-neutral-400">
-            Inventory
-          </p>
-          <h1 className="mt-1 text-2xl font-semibold tracking-tight text-[var(--foreground)] sm:text-3xl">
-            在庫一覧
-          </h1>
-          <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-neutral-500">
-            親商品（グループ）と SKU
-            をまたいで検索し、数量をその場で更新できます。CSV
-            によるマスタ反映とバーコード入庫で、倉庫・店舗の運用に合わせた入庫フローもまとめて扱えます。
-          </p>
-          <div className="mt-2">
-            <Link
-              href="/inventory/movements"
-              className="text-sm font-semibold text-neutral-600 underline-offset-4 hover:underline dark:text-neutral-300"
+      <header className="flex flex-col gap-4 border-b border-[var(--border)] pb-5 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-neutral-400">
+              Inventory
+            </p>
+            <h1 className="mt-1 text-2xl font-semibold tracking-tight text-[var(--foreground)] sm:text-3xl">
+              在庫一覧
+            </h1>
+            <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-neutral-500">
+              親商品（グループ）と SKU
+              の数量をその場で更新できます。CSV
+              によるマスタ反映とバーコード入庫で、倉庫・店舗の運用に合わせた入庫フローもまとめて扱えます。
+            </p>
+          </div>
+          <div className="flex w-full shrink-0 flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:justify-end">
+            <a
+              href="/api/inventory/csv-export"
+              title="アクティブなグループ・SKU の現在値を、取込と同じ列形式で出力します（UTF-8）。"
+              className="btn btn-foreground flex-1 sm:flex-initial sm:min-w-[8.5rem]"
             >
-              入出庫履歴を見る
-            </Link>
+              <IconDownload className="h-4 w-4 shrink-0" />
+              CSV エクスポート
+            </a>
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              disabled={pending}
+              className="btn btn-foreground flex-1 px-5 font-semibold sm:flex-initial sm:min-w-[8.5rem]"
+            >
+              <IconUpload className="h-4 w-4 shrink-0" />
+              CSV アップロード
+            </button>
+            <input
+              ref={fileRef}
+              type="file"
+              accept=".csv,text/csv"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                e.target.value = "";
+                if (f) void onCsvFile(f);
+              }}
+            />
           </div>
         </header>
 
@@ -191,57 +276,6 @@ export function InventoryListClient({ groups, summary }: Props) {
           />
         </div>
 
-        <div className="mt-6 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4 shadow-card sm:p-5">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
-            <div className="relative min-w-0 flex-1">
-              <IconSearch className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
-              <input
-                type="search"
-                placeholder="商品名・グループコード・SKU・JAN で検索…"
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                className="h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] pl-10 pr-4 text-sm text-[var(--foreground)] placeholder:text-neutral-400 transition focus:border-[var(--border-strong)] focus:bg-[var(--surface)] focus:outline-none focus:ring-2 focus:ring-neutral-900/10 dark:focus:ring-white/10"
-              />
-            </div>
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-              <a
-                href="/api/inventory/csv-export"
-                title="アクティブなグループ・SKU の現在値を、取込と同じ列形式で出力します（UTF-8）。"
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm font-medium text-[var(--foreground)] transition hover:border-[var(--border-strong)] hover:bg-[var(--surface-muted)]"
-              >
-                <IconDownload className="h-4 w-4" />
-                CSV エクスポート
-              </a>
-              <a
-                href="/api/inventory/csv-template"
-                className="text-xs font-medium text-neutral-500 underline-offset-4 hover:text-[var(--foreground)] hover:underline"
-              >
-                テンプレート（サンプル行）
-              </a>
-              <button
-                type="button"
-                onClick={() => fileRef.current?.click()}
-                disabled={pending}
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-5 text-sm font-semibold text-[var(--foreground)] shadow-sm transition hover:bg-[var(--surface-muted)] disabled:opacity-50"
-              >
-                <IconUpload className="h-4 w-4" />
-                CSV アップロード
-              </button>
-              <input
-                ref={fileRef}
-                type="file"
-                accept=".csv,text/csv"
-                className="hidden"
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  e.target.value = "";
-                  if (f) void onCsvFile(f);
-                }}
-              />
-            </div>
-          </div>
-        </div>
-
         {message ? (
           <div
             role="status"
@@ -258,7 +292,9 @@ export function InventoryListClient({ groups, summary }: Props) {
         ) : null}
 
         <BarcodeInboundPanel
+          groups={groups}
           disabled={pending}
+          onCatalogFilterChange={onInboundCatalogFilter}
           onResult={(msg, tone) => {
             setMessage(msg);
             setMessageTone(tone ?? "info");
@@ -276,11 +312,12 @@ export function InventoryListClient({ groups, summary }: Props) {
             </h2>
             <p className="mt-1 max-w-xl text-sm text-neutral-500 dark:text-neutral-400">
               行を開いて SKU
-              ごとの在庫とアラートを確認・更新できます。
+              ごとの在庫とアラートを確認・更新できます。バーコード入庫の「商品名など」「JAN
+              コード」に入力がある間、一致するグループだけを表示します。
             </p>
           </div>
           <div className="space-y-4">
-            {filtered.length === 0 ? (
+            {groups.length === 0 ? (
               <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-[var(--border-strong)] bg-white/60 px-8 py-16 text-center dark:border-[var(--border)] dark:bg-[var(--surface)]/40">
                 <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-[var(--surface-muted)] dark:bg-[var(--surface-muted)]">
                   <IconCube className="h-7 w-7 text-neutral-400" />
@@ -289,11 +326,20 @@ export function InventoryListClient({ groups, summary }: Props) {
                   表示できる商品がありません
                 </p>
                 <p className="mt-2 max-w-md text-sm text-neutral-500 dark:text-neutral-400">
-                  検索条件を変えるか、上部の「テンプレート（サンプル行）」で形式を確認してから取り込んでください。
+                  CSV アップロードでマスタを取り込むか、データを登録してください。
+                </p>
+              </div>
+            ) : catalogGroups.length === 0 ? (
+              <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-amber-200/80 bg-amber-50/50 px-8 py-14 text-center dark:border-amber-900/45 dark:bg-amber-950/22">
+                <p className="text-base font-medium text-neutral-800 dark:text-neutral-200">
+                  入力に一致する商品グループがありません
+                </p>
+                <p className="mt-2 max-w-md text-sm text-neutral-600 dark:text-neutral-400">
+                  バーコード入庫の商品名など・JAN の入力を変えるか消すと、一覧が戻ります。
                 </p>
               </div>
             ) : (
-              filtered.map((g) => (
+              catalogGroups.map((g) => (
                 <GroupBlock
                   key={g.id}
                   group={g}
@@ -429,7 +475,7 @@ function GroupBlock({
             onClick={() => setOpen((o) => !o)}
             aria-expanded={open}
             aria-controls={panelId}
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface-muted)] text-neutral-600 transition hover:border-[var(--border-strong)] hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)] dark:border-[var(--border)] dark:bg-[var(--surface-muted)] dark:text-neutral-300 dark:hover:border-[var(--border-strong)] dark:hover:bg-[var(--surface-muted)] dark:hover:text-white"
+            className="btn-icon bg-[var(--surface-muted)] text-neutral-600 hover:text-[var(--foreground)] dark:hover:text-white"
           >
             <span className="sr-only">
               {open ? "SKU 一覧を閉じる" : "SKU 一覧を開く"}
@@ -572,7 +618,7 @@ function SkuEditRow({
               if (Number.isNaN(n) || n < 0) return;
               onSave(n);
             }}
-            className="h-9 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 text-xs font-semibold text-neutral-800 transition hover:bg-[var(--surface-muted)] disabled:opacity-40 dark:text-[var(--foreground)]"
+            className="btn btn-sm btn-foreground disabled:opacity-40"
           >
             保存
           </button>
@@ -583,11 +629,15 @@ function SkuEditRow({
 }
 
 function BarcodeInboundPanel({
+  groups,
   disabled,
+  onCatalogFilterChange,
   onResult,
   onSuccess,
 }: {
+  groups: GroupRow[];
   disabled: boolean;
+  onCatalogFilterChange?: (productText: string, janText: string) => void;
   onResult: (s: string | null, tone?: "info" | "success" | "error") => void;
   onSuccess: () => void;
 }) {
@@ -595,18 +645,38 @@ function BarcodeInboundPanel({
   const [jan, setJan] = useState("");
   const [qty, setQty] = useState("1");
   const [scanning, setScanning] = useState(false);
+  /** 入庫 API 実行前の確認ダイアログ */
+  const [confirmInbound, setConfirmInbound] = useState<{
+    resolvedJan: string;
+    qty: number;
+    productNote: string;
+    janField: string;
+    groupName: string | null;
+    groupCode: string | null;
+    skuCode: string | null;
+    variantLabel: string | null;
+  } | null>(null);
+  /** 「カメラでスキャン」押下後〜停止まで。プレビュー列と video のマウントに使う */
+  const [showCameraPreview, setShowCameraPreview] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const scanCleanupRef = useRef<(() => void) | null>(null);
   const activeRef = useRef(false);
+  const cameraSessionRef = useRef(0);
+
+  useEffect(() => {
+    onCatalogFilterChange?.(productName, jan);
+  }, [productName, jan, onCatalogFilterChange]);
 
   async function stopCamera() {
+    cameraSessionRef.current += 1;
     activeRef.current = false;
     scanCleanupRef.current?.();
     scanCleanupRef.current = null;
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
     setScanning(false);
+    setShowCameraPreview(false);
     const v = videoRef.current;
     if (v) v.srcObject = null;
   }
@@ -619,18 +689,32 @@ function BarcodeInboundPanel({
       return;
     }
     await stopCamera();
+    const session = cameraSessionRef.current;
+    flushSync(() => {
+      setShowCameraPreview(true);
+    });
     try {
       const stream = await getScanCameraStream();
+      if (session !== cameraSessionRef.current) {
+        stream.getTracks().forEach((t) => t.stop());
+        return;
+      }
       streamRef.current = stream;
       const v = videoRef.current;
       if (!v) {
         stream.getTracks().forEach((t) => t.stop());
         streamRef.current = null;
+        setShowCameraPreview(false);
         onResult("カメラプレビューの準備に失敗しました。", "error");
         return;
       }
       v.srcObject = stream;
       await v.play();
+      if (session !== cameraSessionRef.current) {
+        stream.getTracks().forEach((t) => t.stop());
+        streamRef.current = null;
+        return;
+      }
       setScanning(true);
       activeRef.current = true;
       const cleanup = await startVideoBarcodeScan({
@@ -656,8 +740,13 @@ function BarcodeInboundPanel({
           void stopCamera();
         },
       });
+      if (session !== cameraSessionRef.current) {
+        cleanup();
+        return;
+      }
       scanCleanupRef.current = cleanup;
     } catch (e) {
+      setShowCameraPreview(false);
       onResult(explainGetUserMediaFailure(e), "error");
     }
   }
@@ -685,7 +774,7 @@ function BarcodeInboundPanel({
       return;
     }
     if (!j && !p) {
-      onResult("商品名または JAN コードのいずれかを入力してください。", "error");
+      onResult("商品名などまたは JAN コードのいずれかを入力してください。", "error");
       return;
     }
 
@@ -709,25 +798,56 @@ function BarcodeInboundPanel({
         onResult(lastErr || "商品を特定できませんでした。", "error");
         return;
       }
-      void barcodeInboundAction(targetJan, qn).then((r) => {
-        if (r.ok) {
-          onResult("入庫を記録しました。", "success");
-          setJan("");
-          setProductName("");
-          setQty("1");
-          onSuccess();
-        } else {
-          onResult(r.message, "error");
-        }
+      const ctx = lookupSkuContextByResolvedJan(groups, targetJan);
+      setConfirmInbound({
+        resolvedJan: targetJan,
+        qty: qn,
+        productNote: p,
+        janField: j,
+        groupName: ctx?.groupName ?? null,
+        groupCode: ctx?.groupCode ?? null,
+        skuCode: ctx?.skuCode ?? null,
+        variantLabel: ctx?.variantLabel ?? null,
       });
     });
   }
 
+  function cancelInboundConfirm() {
+    setConfirmInbound(null);
+  }
+
+  function runConfirmedInbound() {
+    if (!confirmInbound || disabled) return;
+    const { resolvedJan, qty: qn } = confirmInbound;
+    setConfirmInbound(null);
+    void barcodeInboundAction(resolvedJan, qn).then((r) => {
+      if (r.ok) {
+        onResult("入庫を記録しました。", "success");
+        setJan("");
+        setProductName("");
+        setQty("1");
+        onSuccess();
+      } else {
+        onResult(r.message, "error");
+      }
+    });
+  }
+
+  useEffect(() => {
+    if (!confirmInbound) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") cancelInboundConfirm();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [confirmInbound]);
+
   return (
+    <>
     <section className="mt-6 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-card">
       <div className="border-b border-[var(--border)] bg-gradient-to-r from-[var(--surface-muted)] to-[var(--surface)] px-5 py-4 dark:border-[var(--border)] dark:from-[var(--surface-muted)] dark:to-[var(--surface)]">
         <div className="flex flex-wrap items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--border)] bg-neutral-900 text-white shadow-sm dark:border-[var(--border)] dark:bg-neutral-800">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] shadow-sm dark:border-[var(--border)] dark:bg-[var(--surface-muted)]">
             <IconScan className="h-5 w-5" />
           </div>
           <div>
@@ -735,7 +855,7 @@ function BarcodeInboundPanel({
               バーコード入庫
             </h2>
             <p className="text-xs text-neutral-600 dark:text-neutral-400">
-              商品名または JAN を入力し、入庫数量を指定します（履歴区分:{" "}
+              商品名などまたは JAN を入力し、入庫数量を指定します（履歴区分:{" "}
               <code className="rounded bg-white/60 px-1 font-mono text-[11px] dark:bg-[var(--surface-muted)]/80">
                 barcode_inbound
               </code>
@@ -744,41 +864,20 @@ function BarcodeInboundPanel({
           </div>
         </div>
       </div>
-      <div className="grid gap-6 p-5 lg:grid-cols-2 lg:items-stretch lg:gap-8 lg:p-6">
-        <div className="flex min-h-0 flex-col">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
-            プレビュー
-          </p>
-          <div className="flex min-h-[220px] flex-1 flex-col overflow-hidden rounded-xl border border-[var(--border)] bg-slate-950 shadow-inner dark:border-[var(--border)] lg:min-h-[280px]">
-            <video
-              ref={videoRef}
-              className={`w-full flex-1 object-cover ${scanning ? "min-h-[200px]" : "hidden h-0 min-h-0"}`}
-              muted
-              playsInline
-            />
-            {!scanning ? (
-              <div className="flex flex-1 flex-col items-center justify-center gap-3 px-4 py-12 text-center">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-neutral-600/50 bg-neutral-900/85 dark:border-neutral-500/40 text-neutral-500">
-                  <IconCamera className="h-7 w-7" />
-                </div>
-                <p className="max-w-[16rem] text-xs leading-relaxed text-neutral-500">
-                  「カメラでスキャン」を押すと、ここにライブプレビューが表示されます
-                </p>
-              </div>
-            ) : null}
-          </div>
-        </div>
+      <div
+        className={`grid gap-6 p-5 lg:p-6 ${showCameraPreview ? "lg:grid-cols-2 lg:items-stretch lg:gap-8" : ""}`}
+      >
         <div className="grid min-w-0 grid-cols-1 content-start gap-x-4 gap-y-3 sm:grid-cols-2 sm:gap-y-3 lg:py-0">
           <div>
             <label className="mb-1 block text-xs font-semibold text-neutral-600 dark:text-neutral-400">
-              商品名
+              商品名など
             </label>
             <input
               value={productName}
               onChange={(e) => setProductName(e.target.value)}
               onBlur={() => void tryFillJanFromQuery(productName, true)}
               className="h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface-muted)]/80 px-3 text-sm transition focus:border-[var(--border-strong)] focus:bg-[var(--surface)] focus:outline-none focus:ring-2 focus:ring-neutral-900/10 dark:focus:ring-white/10 dark:border-[var(--border)] dark:bg-[var(--surface-muted)]/50 dark:focus:border-[var(--border-strong)] dark:focus:bg-[var(--surface)]"
-              placeholder="親商品名・バリエーション名など"
+              placeholder="グループ名・コード、SKU、バリエーション、商品名…"
             />
           </div>
           <div>
@@ -808,27 +907,27 @@ function BarcodeInboundPanel({
               <div className="flex shrink-0 flex-nowrap items-center gap-2">
                 <button
                   type="button"
-                  disabled={disabled}
+                  disabled={disabled || confirmInbound != null}
                   onClick={() => submitInbound()}
-                  className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-5 text-sm font-semibold text-neutral-800 shadow-sm transition hover:bg-[var(--surface-muted)] disabled:opacity-50 dark:border-[var(--border)] dark:bg-[var(--surface-muted)] dark:text-[var(--foreground)] dark:hover:bg-[var(--surface-muted)]"
+                  className="btn btn-foreground px-5 font-semibold text-neutral-800 dark:text-[var(--foreground)]"
                 >
                   <IconCheck className="h-4 w-4" />
                   入庫を確定
                 </button>
                 <button
                   type="button"
-                  disabled={disabled || scanning}
+                  disabled={disabled || showCameraPreview}
                   onClick={() => void startScan()}
-                  className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 text-sm font-medium text-neutral-700 transition hover:bg-[var(--surface-muted)] disabled:opacity-50 dark:border-[var(--border)] dark:bg-[var(--surface-muted)] dark:text-neutral-200 dark:hover:bg-[var(--surface-muted)]"
+                  className="btn"
                 >
                   <IconCamera className="h-4 w-4" />
                   カメラでスキャン
                 </button>
-                {scanning ? (
+                {showCameraPreview ? (
                   <button
                     type="button"
                     onClick={() => void stopCamera()}
-                    className="inline-flex h-11 shrink-0 items-center px-2 text-sm font-medium text-red-600 underline-offset-4 hover:underline dark:text-red-400"
+                    className="btn-stop"
                   >
                     停止
                   </button>
@@ -837,27 +936,147 @@ function BarcodeInboundPanel({
             </div>
           </div>
         </div>
+        {showCameraPreview ? (
+          <div className="flex min-h-0 flex-col">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+              プレビュー
+            </p>
+            <div className="relative flex min-h-[220px] flex-1 flex-col overflow-hidden rounded-xl border border-[var(--border)] bg-slate-950 shadow-inner dark:border-[var(--border)] lg:min-h-[280px]">
+              <video
+                ref={videoRef}
+                className="min-h-[200px] w-full flex-1 object-cover"
+                muted
+                playsInline
+              />
+              {!scanning ? (
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-slate-950/92 px-4 py-12 text-center">
+                  <div
+                    className="h-9 w-9 shrink-0 animate-spin rounded-full border-2 border-neutral-600 border-t-neutral-300"
+                    aria-hidden
+                  />
+                  <p className="max-w-[16rem] text-xs leading-relaxed text-neutral-400">
+                    カメラを起動しています…
+                  </p>
+                </div>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
       </div>
     </section>
-  );
-}
 
-function IconSearch(props: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-      {...props}
-    >
-      <circle cx="11" cy="11" r="8" />
-      <path d="m21 21-4.3-4.3" />
-    </svg>
+    {confirmInbound ? (
+      <div
+        className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+        role="presentation"
+      >
+        <button
+          type="button"
+          className="absolute inset-0 bg-black/45 backdrop-blur-[2px]"
+          aria-label="閉じる"
+          onClick={cancelInboundConfirm}
+        />
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="inbound-confirm-title"
+          className="relative z-[1] w-full max-w-md rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-xl dark:border-[var(--border)] dark:bg-[var(--surface)]"
+        >
+          <h3
+            id="inbound-confirm-title"
+            className="text-base font-semibold text-[var(--foreground)]"
+          >
+            入庫の確認
+          </h3>
+          <p className="mt-2 text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
+            次の内容で在庫に加算します。よろしいですか？
+          </p>
+          <dl className="mt-4 space-y-2.5 rounded-xl border border-[var(--border)] bg-[var(--surface-muted)]/60 px-4 py-3 text-sm dark:bg-[var(--surface-muted)]/40">
+            {confirmInbound.groupName || confirmInbound.skuCode ? (
+              <>
+                <div className="flex flex-wrap justify-between gap-x-4 gap-y-1">
+                  <dt className="shrink-0 text-neutral-500 dark:text-neutral-400">
+                    商品グループ
+                  </dt>
+                  <dd className="min-w-0 max-w-full text-right font-medium text-[var(--foreground)]">
+                    <span className="break-words">{confirmInbound.groupName ?? "—"}</span>
+                    {confirmInbound.groupCode ? (
+                      <span className="mt-0.5 block font-mono text-xs font-normal text-neutral-500 dark:text-neutral-400">
+                        {confirmInbound.groupCode}
+                      </span>
+                    ) : null}
+                  </dd>
+                </div>
+                <div className="flex flex-wrap justify-between gap-x-4 gap-y-1 border-t border-[var(--border)]/70 pt-2.5">
+                  <dt className="text-neutral-500 dark:text-neutral-400">SKU</dt>
+                  <dd className="break-all font-mono text-xs font-semibold text-[var(--foreground)] sm:text-sm">
+                    {confirmInbound.skuCode ?? "—"}
+                  </dd>
+                </div>
+                <div className="flex flex-wrap justify-between gap-x-4 gap-y-1 border-t border-[var(--border)]/70 pt-2.5">
+                  <dt className="shrink-0 text-neutral-500 dark:text-neutral-400">名称</dt>
+                  <dd className="min-w-0 max-w-[min(100%,14rem)] text-right text-[var(--foreground)] sm:max-w-[18rem]">
+                    <span className="break-words">{confirmInbound.variantLabel ?? "—"}</span>
+                  </dd>
+                </div>
+              </>
+            ) : (
+              <p className="text-xs leading-relaxed text-neutral-500 dark:text-neutral-400">
+                在庫一覧に一致する SKU
+                が見つかりませんでした。JAN はサーバーで解決済みです。表示を更新してから再度お試しください。
+              </p>
+            )}
+            <div className="flex flex-wrap justify-between gap-x-4 gap-y-1 border-t border-[var(--border)]/70 pt-2.5">
+              <dt className="text-neutral-500 dark:text-neutral-400">加算数量</dt>
+              <dd className="font-semibold tabular-nums text-[var(--foreground)]">
+                {confirmInbound.qty.toLocaleString("ja-JP")}
+              </dd>
+            </div>
+            <div className="flex flex-wrap justify-between gap-x-4 gap-y-1">
+              <dt className="text-neutral-500 dark:text-neutral-400">確定 JAN</dt>
+              <dd className="break-all font-mono text-xs font-medium text-[var(--foreground)] sm:text-sm">
+                {confirmInbound.resolvedJan}
+              </dd>
+            </div>
+            {confirmInbound.janField &&
+            confirmInbound.janField !== confirmInbound.resolvedJan ? (
+              <div className="flex flex-wrap justify-between gap-x-4 gap-y-1 border-t border-[var(--border)]/70 pt-2.5">
+                <dt className="text-neutral-500 dark:text-neutral-400">入力 JAN</dt>
+                <dd className="break-all font-mono text-xs text-[var(--foreground)]">
+                  {confirmInbound.janField}
+                </dd>
+              </div>
+            ) : null}
+            {confirmInbound.productNote ? (
+              <div className="flex flex-wrap justify-between gap-x-4 gap-y-1 border-t border-[var(--border)]/70 pt-2.5">
+                <dt className="text-neutral-500 dark:text-neutral-400">商品名など</dt>
+                <dd className="min-w-0 flex-1 text-right text-[var(--foreground)]">
+                  {confirmInbound.productNote}
+                </dd>
+              </div>
+            ) : null}
+          </dl>
+          <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-3">
+            <button
+              type="button"
+              onClick={cancelInboundConfirm}
+              className="btn"
+            >
+              キャンセル
+            </button>
+            <button
+              type="button"
+              disabled={disabled}
+              onClick={() => runConfirmedInbound()}
+              className="btn-primary"
+            >
+              入庫する
+            </button>
+          </div>
+        </div>
+      </div>
+    ) : null}
+    </>
   );
 }
 

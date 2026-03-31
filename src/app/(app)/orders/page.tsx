@@ -31,7 +31,7 @@ export default async function OrdersPage() {
 
   return (
     <AppPageMain className="pb-20">
-      <header className="flex flex-col gap-4 border-b border-[var(--border)] pb-5 sm:flex-row sm:items-end sm:justify-between">
+      <header className="flex flex-col gap-4 border-b border-[var(--border)] pb-5 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-neutral-400">
             Orders
@@ -42,8 +42,11 @@ export default async function OrdersPage() {
         </div>
         <Link
           href="/orders/new"
-          className="inline-flex items-center justify-center rounded-full bg-neutral-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-neutral-800 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-200"
+          className="btn-primary shrink-0 gap-2 self-start px-4"
         >
+          <span aria-hidden className="text-lg leading-none">
+            +
+          </span>
           新規注文
         </Link>
       </header>

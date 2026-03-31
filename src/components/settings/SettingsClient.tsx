@@ -105,7 +105,7 @@ export function SettingsClient({
           <button
             type="submit"
             disabled={pending}
-            className="shrink-0 rounded-full bg-neutral-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-neutral-800 disabled:opacity-60 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-200"
+            className="btn-primary shrink-0"
           >
             保存
           </button>
@@ -167,7 +167,7 @@ export function SettingsClient({
             type="button"
             disabled={pending}
             onClick={onSeed}
-            className="mt-4 rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2.5 text-sm font-semibold text-[var(--foreground)] shadow-sm transition hover:bg-[var(--surface-muted)] disabled:opacity-60"
+            className="btn btn-foreground mt-4 font-semibold disabled:opacity-60"
           >
             デモ SKU を取り込む
           </button>

@@ -14,7 +14,6 @@ import {
   lineSubtotalExTax,
   orderTotalsFromLines,
 } from "@/lib/pricing";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 
@@ -23,6 +22,11 @@ export type OrderSkuOption = {
   sku_code: string;
   jan_code: string;
   name_variant: string | null;
+  color: string | null;
+  size: string | null;
+  /** 親商品名（商品グループ） */
+  group_name: string;
+  group_code: string;
   unit_price_ex_tax: number;
   quantity: number;
 };
@@ -54,14 +58,24 @@ export function OrderNewClient({ skus }: { skus: OrderSkuOption[] }) {
     const n = query.trim().toLowerCase();
     if (!n) return skus.slice(0, 40);
     return skus
-      .filter(
-        (s) =>
-          s.sku_code.toLowerCase().includes(n) ||
-          s.jan_code.includes(n) ||
-          (s.name_variant ?? "").toLowerCase().includes(n),
-      )
-      .slice(0, 60);
+      .filter((s) => {
+        const hay = [
+          s.sku_code,
+          s.jan_code,
+          s.group_name,
+          s.group_code,
+          s.name_variant ?? "",
+          s.color ?? "",
+          s.size ?? "",
+        ]
+          .join(" ")
+          .toLowerCase();
+        return hay.includes(n);
+      })
+      .slice(0, 80);
   }, [skus, query]);
+
+  const queryActive = query.trim().length > 0;
 
   const totals = useMemo(() => {
     return orderTotalsFromLines(
@@ -217,8 +231,17 @@ export function OrderNewClient({ skus }: { skus: OrderSkuOption[] }) {
             商品の追加
           </h2>
           <p className="mt-1 text-xs text-neutral-500">
-            検索・JAN 手入力・カメラスキャンで明細に追加します。
+            検索・JAN 手入力・カメラでスキャンで明細に追加します。
           </p>
+          <div className="mt-4">
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="グループ名・コード、SKU、バリエーション、商品名…"
+              className="h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--surface-muted)]/80 px-3 text-sm text-[var(--foreground)] placeholder:text-neutral-400 transition focus:border-[var(--border-strong)] focus:bg-[var(--surface)] focus:outline-none focus:ring-2 focus:ring-neutral-900/10 dark:focus:ring-white/10 dark:border-[var(--border)] dark:bg-[var(--surface-muted)]/50 dark:focus:border-[var(--border-strong)] dark:focus:bg-[var(--surface)]"
+            />
+          </div>
           <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
             <input
               type="text"
@@ -231,18 +254,30 @@ export function OrderNewClient({ skus }: { skus: OrderSkuOption[] }) {
               type="button"
               onClick={() => void onResolveJan(janInput)}
               disabled={pending}
-              className="h-10 rounded-lg bg-neutral-900 px-4 text-sm font-semibold text-white dark:bg-white dark:text-neutral-900"
+              className="btn-primary"
             >
               JAN で追加
             </button>
-            <button
-              type="button"
-              onClick={() => (scanning ? stopScan() : void startScan())}
-              disabled={pending}
-              className="h-10 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-4 text-sm font-semibold text-[var(--foreground)]"
-            >
-              {scanning ? "スキャン停止" : "カメラスキャン"}
-            </button>
+            <div className="flex shrink-0 flex-nowrap items-center gap-2">
+              <button
+                type="button"
+                disabled={pending || scanning}
+                onClick={() => void startScan()}
+                className="btn"
+              >
+                <IconCamera className="h-4 w-4" />
+                カメラでスキャン
+              </button>
+              {scanning ? (
+                <button
+                  type="button"
+                  onClick={() => stopScan()}
+                  className="btn-stop"
+                >
+                  停止
+                </button>
+              ) : null}
+            </div>
           </div>
           <video
             ref={videoRef}
@@ -252,31 +287,64 @@ export function OrderNewClient({ skus }: { skus: OrderSkuOption[] }) {
             muted
             playsInline
           />
-          <div className="mt-6">
-            <input
-              type="search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="SKU・名前で検索…"
-              className="h-10 w-full rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 text-sm dark:bg-[var(--surface-muted)]"
-            />
-            <ul className="mt-3 max-h-64 space-y-1 overflow-y-auto text-sm">
-              {filtered.map((s) => (
-                <li key={s.id}>
-                  <button
-                    type="button"
-                    onClick={() => addSku(s, 1)}
-                    className="flex w-full items-center justify-between rounded-lg px-2 py-2 text-left hover:bg-[var(--surface-muted)]"
-                  >
-                    <span className="font-mono text-xs text-[var(--foreground)]">
-                      {s.sku_code}
-                    </span>
-                    <span className="text-xs text-neutral-500">
-                      {formatYen(s.unit_price_ex_tax)}（税抜）· 在庫 {s.quantity}
-                    </span>
-                  </button>
+          <div
+            className={[
+              "mt-4 rounded-xl border px-2 py-2 transition-colors",
+              queryActive
+                ? "border-amber-200/90 bg-amber-50/35 ring-1 ring-amber-900/8 dark:border-amber-800/50 dark:bg-amber-950/22 dark:ring-amber-500/12"
+                : "border-[var(--border)] bg-[var(--surface)]/50 dark:bg-[var(--surface)]/30",
+            ].join(" ")}
+          >
+            <div className="mb-1 hidden px-1.5 sm:grid sm:grid-cols-[minmax(0,6.5rem)_minmax(0,1fr)_minmax(0,1fr)_auto] sm:gap-x-3 sm:text-[10px] sm:font-semibold sm:uppercase sm:tracking-wider sm:text-neutral-400">
+              <span>SKU</span>
+              <span>名称</span>
+              <span>バリエーション</span>
+              <span className="text-right">税抜・在庫</span>
+            </div>
+            <ul className="max-h-72 space-y-0.5 overflow-y-auto text-sm">
+              {filtered.length === 0 ? (
+                <li className="px-2 py-6 text-center text-xs text-neutral-500">
+                  該当する SKU がありません。キーワードを変えてください。
                 </li>
-              ))}
+              ) : (
+                filtered.map((s) => {
+                  const variantParts = [
+                    s.name_variant,
+                    s.color,
+                    s.size,
+                  ].filter((x) => x != null && String(x).trim() !== "");
+                  const variantLabel =
+                    variantParts.length > 0
+                      ? variantParts.join(" · ")
+                      : "—";
+                  const displayName = s.group_name.trim() || "—";
+                  return (
+                    <li key={s.id}>
+                      <button
+                        type="button"
+                        onClick={() => addSku(s, 1)}
+                        className="grid w-full grid-cols-1 gap-x-3 gap-y-1 rounded-lg px-2 py-2.5 text-left transition hover:bg-[var(--surface-muted)] sm:grid-cols-[minmax(0,6.5rem)_minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-center"
+                      >
+                        <span className="font-mono text-xs font-medium text-[var(--foreground)]">
+                          {s.sku_code}
+                        </span>
+                        <span className="line-clamp-2 text-xs text-[var(--foreground)]">
+                          {displayName}
+                        </span>
+                        <span className="line-clamp-2 text-xs text-neutral-600 dark:text-neutral-400">
+                          {variantLabel}
+                        </span>
+                        <span className="text-xs tabular-nums text-neutral-500 sm:text-right">
+                          {formatYen(s.unit_price_ex_tax)}
+                          <span className="text-[10px]">（税抜）</span>
+                          <span className="mx-1 text-neutral-400">·</span>
+                          在庫 {s.quantity}
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })
+              )}
             </ul>
           </div>
         </div>
@@ -300,14 +368,24 @@ export function OrderNewClient({ skus }: { skus: OrderSkuOption[] }) {
                     <p className="font-mono text-xs text-[var(--foreground)]">
                       {l.sku.sku_code}
                     </p>
-                    <p className="text-xs text-neutral-500">
-                      {l.sku.name_variant ?? "—"} · 在庫 {l.sku.quantity}
+                    <p className="mt-0.5 text-xs text-[var(--foreground)]">
+                      {l.sku.group_name.trim() || "—"}
+                    </p>
+                    <p className="mt-0.5 text-xs text-neutral-500">
+                      {[
+                        l.sku.name_variant,
+                        l.sku.color,
+                        l.sku.size,
+                      ]
+                        .filter((x) => x != null && String(x).trim() !== "")
+                        .join(" · ") || "—"}{" "}
+                      · 在庫 {l.sku.quantity}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
-                      className="h-9 w-9 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-lg text-[var(--foreground)]"
+                      className="btn-icon-sm text-lg"
                       onClick={() => setQty(l.sku.id, l.quantity - 1)}
                     >
                       −
@@ -315,7 +393,7 @@ export function OrderNewClient({ skus }: { skus: OrderSkuOption[] }) {
                     <span className="w-8 text-center tabular-nums">{l.quantity}</span>
                     <button
                       type="button"
-                      className="h-9 w-9 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-lg text-[var(--foreground)]"
+                      className="btn-icon-sm text-lg"
                       onClick={() => setQty(l.sku.id, l.quantity + 1)}
                     >
                       +
@@ -375,18 +453,31 @@ export function OrderNewClient({ skus }: { skus: OrderSkuOption[] }) {
             type="button"
             onClick={onSubmit}
             disabled={pending || lines.length === 0}
-            className="mt-6 w-full rounded-full bg-neutral-900 py-3 text-sm font-semibold text-white disabled:opacity-50 dark:bg-white dark:text-neutral-900"
+            className="btn mt-6 w-full font-semibold"
           >
             {pending ? "確定中…" : "注文を確定"}
           </button>
-          <Link
-            href="/orders"
-            className="mt-3 block text-center text-xs font-semibold text-neutral-600 underline-offset-4 hover:underline dark:text-neutral-300"
-          >
-            一覧へ戻る
-          </Link>
         </div>
       </aside>
     </div>
+  );
+}
+
+function IconCamera(props: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+      {...props}
+    >
+      <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
+      <circle cx="12" cy="13" r="3" />
+    </svg>
   );
 }

@@ -94,7 +94,7 @@ export default async function ReportsPage({
         </div>
         <button
           type="submit"
-          className="h-10 rounded-lg border border-neutral-900 bg-neutral-900 px-4 text-sm font-semibold text-white dark:border-white dark:bg-white dark:text-neutral-900"
+          className="btn-primary btn-sm"
         >
           表示
         </button>
@@ -134,13 +134,13 @@ export default async function ReportsPage({
       <div className="mt-8 flex flex-wrap gap-3">
         <a
           href={xlsxHref}
-          className="inline-flex items-center justify-center rounded-full bg-neutral-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-neutral-800 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-200"
+          className="btn-primary"
         >
           Excel ダウンロード
         </a>
         <a
           href={pdfHref}
-          className="inline-flex items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] px-5 py-2.5 text-sm font-semibold text-[var(--foreground)] shadow-sm hover:border-[var(--border-strong)]"
+          className="btn btn-foreground px-5 font-semibold"
         >
           PDF ダウンロード
         </a>

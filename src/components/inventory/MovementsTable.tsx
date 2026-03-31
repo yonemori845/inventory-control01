@@ -4,10 +4,16 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 
+type GroupEmbed = {
+  name: string | null;
+};
+
 type SkuEmbed = {
   sku_code: string;
   jan_code: string;
   name_variant: string | null;
+  /** PostgREST が単一でも配列でも返しうる */
+  product_groups: GroupEmbed | GroupEmbed[] | null;
 };
 
 export type MovementRow = {
@@ -25,6 +31,13 @@ function skuOf(m: MovementRow): SkuEmbed | null {
   const x = m.product_skus;
   if (!x) return null;
   return Array.isArray(x) ? (x[0] ?? null) : x;
+}
+
+function groupNameOf(sku: SkuEmbed | null): string | null {
+  if (!sku?.product_groups) return null;
+  const g = sku.product_groups;
+  const row = Array.isArray(g) ? (g[0] ?? null) : g;
+  return row?.name ?? null;
 }
 
 const REASON_LABEL: Record<string, string> = {
@@ -115,7 +128,7 @@ export function MovementsTable({ rows, filters }: Props) {
         </div>
         <div className="min-w-[160px] flex-1">
           <label className="mb-1 block text-[10px] font-semibold uppercase tracking-[0.12em] text-neutral-400">
-            SKU / JAN / 名称
+            SKU / JAN / グループ名
           </label>
           <input
             name="q"
@@ -128,7 +141,7 @@ export function MovementsTable({ rows, filters }: Props) {
         <button
           type="submit"
           disabled={pending}
-          className="h-9 rounded-lg border border-neutral-900 bg-neutral-900 px-4 text-xs font-semibold text-white shadow-sm hover:bg-neutral-800 disabled:opacity-50 dark:border-white dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-200"
+          className="btn-primary btn-sm"
         >
           絞り込み
         </button>
@@ -141,7 +154,7 @@ export function MovementsTable({ rows, filters }: Props) {
               <th className="px-3 py-2.5">日時</th>
               <th className="px-3 py-2.5">SKU</th>
               <th className="px-3 py-2.5">JAN</th>
-              <th className="px-3 py-2.5">名称</th>
+              <th className="px-3 py-2.5">グループ名</th>
               <th className="px-3 py-2.5">理由</th>
               <th className="px-3 py-2.5 text-right">増減</th>
             </tr>
@@ -181,7 +194,7 @@ export function MovementsTable({ rows, filters }: Props) {
                       {sku?.jan_code ?? "—"}
                     </td>
                     <td className="px-3 py-2 text-neutral-600 dark:text-neutral-400">
-                      {sku?.name_variant ?? "—"}
+                      {groupNameOf(sku) ?? "—"}
                     </td>
                     <td className="px-3 py-2 text-[var(--foreground)]">{label}</td>
                     <td

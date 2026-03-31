@@ -171,7 +171,7 @@ export function AppShell({
           aria-controls={drawerId}
           aria-label={menuOpen ? "メニューを閉じる" : "メニューを開く"}
           onClick={() => setMenuOpen((o) => !o)}
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)] text-[var(--foreground)] shadow-sm transition hover:border-[var(--border-strong)]"
+          className="btn-icon"
         >
           <HamburgerIcon open={menuOpen} />
         </button>
@@ -210,7 +210,7 @@ export function AppShell({
               type="button"
               aria-label="閉じる"
               onClick={() => setMenuOpen(false)}
-              className="flex h-10 w-10 items-center justify-center rounded-lg text-neutral-500 transition hover:bg-black/[0.05] hover:text-[var(--foreground)] dark:hover:bg-white/[0.06]"
+              className="btn-icon text-neutral-500 hover:text-[var(--foreground)]"
             >
               <span className="text-xl leading-none" aria-hidden>
                 ×

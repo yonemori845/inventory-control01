@@ -112,7 +112,7 @@ export function LoginForm({ nextPath, authError }: LoginFormProps) {
         type="button"
         onClick={() => void signInWithGoogle()}
         disabled={loading}
-        className="mt-6 flex w-full items-center justify-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2.5 text-sm font-semibold text-[var(--foreground)] shadow-sm transition hover:border-[var(--border-strong)] hover:bg-[var(--surface-muted)] disabled:opacity-50"
+        className="btn btn-foreground mt-6 w-full font-semibold"
       >
         <span>Google で続ける</span>
       </button>
@@ -196,7 +196,7 @@ export function LoginForm({ nextPath, authError }: LoginFormProps) {
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-full bg-neutral-900 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-neutral-800 disabled:opacity-50 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-200"
+          className="btn-primary w-full"
         >
           {loading ? "処理中…" : mode === "signup" ? "登録する" : "サインイン"}
         </button>

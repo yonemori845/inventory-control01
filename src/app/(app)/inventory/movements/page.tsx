@@ -40,7 +40,10 @@ export default async function MovementsPage({
       product_skus (
         sku_code,
         jan_code,
-        name_variant
+        name_variant,
+        product_groups (
+          name
+        )
       )
     `,
     )
@@ -79,9 +82,17 @@ export default async function MovementsPage({
           ? (x[0] ?? null)
           : x;
       if (!s) return false;
+      const pg = s.product_groups;
+      const g = !pg
+        ? null
+        : Array.isArray(pg)
+          ? (pg[0] ?? null)
+          : pg;
+      const groupName = g?.name?.toLowerCase() ?? "";
       return (
         s.sku_code.toLowerCase().includes(needle) ||
         s.jan_code.toLowerCase().includes(needle) ||
+        groupName.includes(needle) ||
         (s.name_variant?.toLowerCase().includes(needle) ?? false)
       );
     });

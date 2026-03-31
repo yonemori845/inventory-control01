@@ -43,7 +43,7 @@ export function SkuDetailQuantityForm({
         type="button"
         disabled={pending}
         onClick={save}
-        className="inline-flex shrink-0 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)] px-4 py-2.5 text-sm font-semibold text-[var(--foreground)] shadow-sm transition hover:bg-[var(--surface-muted)] disabled:opacity-40"
+        className="btn btn-foreground shrink-0 font-semibold disabled:opacity-40"
       >
         保存
       </button>

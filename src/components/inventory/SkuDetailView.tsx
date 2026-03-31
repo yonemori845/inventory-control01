@@ -106,7 +106,7 @@ export function SkuDetailView({
         <header className="mb-6 flex items-start gap-3">
           <Link
             href="/inventory"
-            className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)] text-neutral-600 shadow-sm transition hover:border-[var(--border-strong)] hover:text-[var(--foreground)] dark:text-neutral-300"
+            className="btn-icon mt-0.5 shrink-0 text-neutral-600 dark:text-neutral-300"
             aria-label="在庫一覧へ戻る"
           >
             <IconArrowLeft className="h-5 w-5" />
@@ -296,7 +296,7 @@ function SkuImageChangeButton() {
       type="button"
       disabled
       title="Storage 連携後に利用可能になる予定です"
-      className="mt-4 flex w-full items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--surface)] py-2.5 text-sm font-semibold text-neutral-600 shadow-sm opacity-60 dark:text-neutral-300"
+      className="btn btn-foreground mt-4 w-full opacity-60 dark:text-neutral-300"
     >
       画像を変更
     </button>

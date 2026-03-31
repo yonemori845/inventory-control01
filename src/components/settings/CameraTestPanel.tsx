@@ -93,7 +93,7 @@ export function CameraTestPanel() {
         type="button"
         disabled={busy}
         onClick={() => void runTest()}
-        className="mt-4 rounded-full bg-neutral-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-neutral-800 disabled:opacity-60 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-200"
+        className="btn-primary mt-4"
       >
         {busy ? "テスト中…" : "カメラをテスト（取得してすぐ停止）"}
       </button>

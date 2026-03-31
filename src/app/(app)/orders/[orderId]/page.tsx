@@ -1,7 +1,6 @@
 import { AppPageMain } from "@/components/layout/app-page";
 import { formatYen } from "@/lib/pricing";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
 type Props = { params: Promise<{ orderId: string }> };
@@ -28,7 +27,13 @@ export default async function OrderDetailPage({ params }: Props) {
       quantity,
       unit_price_ex_tax,
       line_subtotal_ex_tax,
-      product_skus ( sku_code, name_variant )
+      product_skus (
+        sku_code,
+        name_variant,
+        product_groups (
+          name
+        )
+      )
     `,
     )
     .eq("order_id", orderId);
@@ -46,21 +51,13 @@ export default async function OrderDetailPage({ params }: Props) {
   return (
     <AppPageMain className="pb-20">
       <div className="mx-auto w-full max-w-4xl">
-        <header className="flex flex-col gap-4 border-b border-[var(--border)] pb-5 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-neutral-400">
-              Orders
-            </p>
-            <h1 className="mt-1 text-2xl font-semibold tracking-tight text-[var(--foreground)] sm:text-3xl">
-              注文詳細
-            </h1>
-          </div>
-          <Link
-            href="/orders"
-            className="shrink-0 text-sm font-semibold text-neutral-600 underline-offset-4 hover:underline dark:text-neutral-300"
-          >
-            一覧へ
-          </Link>
+        <header className="border-b border-[var(--border)] pb-5">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-neutral-400">
+            Orders
+          </p>
+          <h1 className="mt-1 text-2xl font-semibold tracking-tight text-[var(--foreground)] sm:text-3xl">
+            注文詳細
+          </h1>
         </header>
 
         <div className="mt-6 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-5 shadow-card">
@@ -108,7 +105,7 @@ export default async function OrderDetailPage({ params }: Props) {
             <thead>
               <tr className="border-b border-[var(--border)] text-[10px] font-semibold uppercase tracking-[0.08em] text-neutral-400">
                 <th className="px-4 py-2">SKU</th>
-                <th className="px-4 py-2">名称</th>
+                <th className="px-4 py-2">グループ名</th>
                 <th className="px-4 py-2 text-right">数量</th>
                 <th className="px-4 py-2 text-right">税抜単価</th>
                 <th className="px-4 py-2 text-right">税抜小計</th>
@@ -119,6 +116,14 @@ export default async function OrderDetailPage({ params }: Props) {
                 const sku = Array.isArray(row.product_skus)
                   ? row.product_skus[0]
                   : row.product_skus;
+                const pg = sku?.product_groups;
+                const group =
+                  pg == null
+                    ? null
+                    : Array.isArray(pg)
+                      ? (pg[0] ?? null)
+                      : pg;
+                const groupName = group?.name?.trim() || null;
                 return (
                   <tr
                     key={row.id}
@@ -128,7 +133,7 @@ export default async function OrderDetailPage({ params }: Props) {
                       {sku?.sku_code ?? "—"}
                     </td>
                     <td className="px-4 py-2 text-neutral-600 dark:text-neutral-400">
-                      {sku?.name_variant ?? "—"}
+                      {groupName ?? "—"}
                     </td>
                     <td className="px-4 py-2 text-right tabular-nums">
                       {row.quantity}

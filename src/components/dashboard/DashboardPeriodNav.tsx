@@ -64,10 +64,10 @@ export function DashboardPeriodPresets({ from, to }: Props) {
             type="button"
             onClick={() => pushRange(r.from, r.to)}
             className={[
-              "rounded-full px-3.5 py-1.5 text-xs font-semibold transition-colors",
+              "btn btn-sm !h-auto !min-h-0 !rounded-full px-3.5 py-1.5 font-semibold transition-colors",
               on
                 ? "bg-[var(--surface-muted)] text-[var(--foreground)] ring-1 ring-[var(--border-strong)]"
-                : "text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100",
+                : "border-transparent bg-transparent text-neutral-600 shadow-none hover:border-[var(--border)] hover:bg-[var(--surface)] hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100",
             ].join(" ")}
           >
             {label}

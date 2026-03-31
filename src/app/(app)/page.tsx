@@ -1,4 +1,3 @@
-import { DashboardAnchorNav } from "@/components/dashboard/DashboardAnchorNav";
 import { DashboardPeriodPresets } from "@/components/dashboard/DashboardPeriodNav";
 import { SalesChart, type DailyPoint } from "@/components/dashboard/SalesChart";
 import { AppPageMain } from "@/components/layout/app-page";
@@ -209,7 +208,7 @@ export default async function DashboardPage({
           </div>
           <Link
             href="/orders/new"
-            className="inline-flex shrink-0 items-center justify-center gap-2 self-start rounded-full bg-neutral-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-neutral-800 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-200"
+            className="btn-primary shrink-0 gap-2 self-start px-4"
           >
             <span aria-hidden className="text-lg leading-none">
               +
@@ -404,20 +403,6 @@ export default async function DashboardPage({
               )}
             </ul>
           </section>
-      </div>
-
-      <div className="mt-10 pb-2">
-        <DashboardAnchorNav
-            items={[
-              { id: "section-chart", label: "売上推移" },
-              { id: "section-ranking", label: "ランキング" },
-              {
-                id: "section-alerts",
-                label: "在庫アラート",
-                badge: alertRows.length,
-              },
-            ]}
-        />
       </div>
     </AppPageMain>
   );
