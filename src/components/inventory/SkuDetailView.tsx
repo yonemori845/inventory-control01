@@ -7,6 +7,7 @@ import {
   priceIncTax,
 } from "@/lib/pricing";
 import Image from "next/image";
+import Link from "next/link";
 import type { ReactNode } from "react";
 import { SkuDetailQuantityForm } from "./SkuDetailQuantityForm";
 
@@ -106,12 +107,23 @@ export function SkuDetailView({
           <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-neutral-400">
             Inventory
           </p>
-          <h1 className="mt-1 text-2xl font-semibold tracking-tight text-[var(--foreground)] sm:text-3xl">
-            商品詳細
-          </h1>
-          <p className="mt-1 text-sm leading-snug text-neutral-500">
-            商品情報と在庫
-          </p>
+          <div className="mt-1 flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
+            <div className="min-w-0">
+              <h1 className="text-2xl font-semibold tracking-tight text-[var(--foreground)] sm:text-3xl">
+                商品詳細
+              </h1>
+              <p className="mt-1 text-sm leading-snug text-neutral-500">
+                商品情報と在庫
+              </p>
+            </div>
+            <Link
+              href="/inventory"
+              className="btn inline-flex shrink-0 items-center gap-2 px-4 py-2 text-sm font-semibold"
+            >
+              <IconArrowLeft className="h-4 w-4 shrink-0 opacity-80" aria-hidden />
+              在庫一覧へ戻る
+            </Link>
+          </div>
         </header>
 
         <div className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface)] shadow-card">
@@ -260,6 +272,24 @@ export function SkuDetailView({
         </div>
       </div>
     </div>
+  );
+}
+
+function IconArrowLeft({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+      className={className}
+    >
+      <path d="m15 18-6-6 6-6" />
+    </svg>
   );
 }
 

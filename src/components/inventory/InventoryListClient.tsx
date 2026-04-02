@@ -19,7 +19,9 @@ import {
   getCameraPrerequisiteMessage,
 } from "@/lib/media/camera-access-help";
 import { getScanCameraStream } from "@/lib/media/scan-camera";
-import type { MouseEvent, ReactNode } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import type { ReactNode } from "react";
 import {
   useCallback,
   useEffect,
@@ -29,7 +31,6 @@ import {
   useTransition,
 } from "react";
 import { flushSync } from "react-dom";
-import { useRouter } from "next/navigation";
 
 export type SkuRow = {
   id: string;
@@ -548,29 +549,21 @@ function SkuEditRow({
   );
   const rec = recommendedOrderQty(sku.quantity, sku.safety_stock);
   const inactive = !sku.is_active;
-  const router = useRouter();
-
-  function rowNavigate(e: MouseEvent<HTMLTableRowElement>) {
-    if (
-      (e.target as HTMLElement).closest(
-        "button, input, a, textarea, select",
-      )
-    ) {
-      return;
-    }
-    router.push(`/inventory/sku/${sku.id}`);
-  }
+  const detailHref = `/inventory/sku/${sku.id}`;
 
   return (
     <tr
-      aria-label={`${sku.sku_code} の商品詳細へ（行をクリック）`}
-      onClick={rowNavigate}
-      className={`cursor-pointer transition-colors hover:bg-[var(--surface-muted)]/80 dark:hover:bg-white/[0.04] ${
+      className={`transition-colors ${
         inactive ? "opacity-60" : ""
       }`}
     >
       <td className="px-5 py-3.5 font-mono text-xs font-medium text-neutral-800 dark:text-neutral-200">
-        <span className="rounded px-0.5">{sku.sku_code}</span>
+        <Link
+          href={detailHref}
+          className="rounded px-0.5 text-neutral-800 underline-offset-2 hover:underline dark:text-neutral-200"
+        >
+          {sku.sku_code}
+        </Link>
         {inactive ? (
           <span className="ml-2 rounded bg-neutral-200 px-1.5 dark:bg-[var(--surface-muted)] text-[10px] font-sans font-normal text-neutral-600 dark:bg-[var(--surface-muted)] dark:text-neutral-400">
             無効
@@ -578,7 +571,12 @@ function SkuEditRow({
         ) : null}
       </td>
       <td className="px-5 py-3.5 font-mono text-xs text-neutral-600 dark:text-neutral-400">
-        {sku.jan_code}
+        <Link
+          href={detailHref}
+          className="text-neutral-600 underline-offset-2 hover:text-neutral-800 hover:underline dark:text-neutral-400 dark:hover:text-neutral-200"
+        >
+          {sku.jan_code}
+        </Link>
       </td>
       <td className="px-5 py-3.5 text-neutral-700 dark:text-neutral-300">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
