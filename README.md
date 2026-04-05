@@ -49,7 +49,11 @@ npm run dev
 
 1. Supabase で新規プロジェクトを作成する。
 2. **Project Settings → API** から `Project URL` と `anon` `public` キーをコピーし、`.env.local` に貼る（`.env.example` のキー名に対応）。
-3. **SQL Editor** で `supabase/migrations/` 内の SQL を**上から順に**実行するか、[Supabase CLI](https://supabase.com/docs/guides/cli) で `supabase db push` 等によりマイグレーションを適用する。在庫の手動更新・CSV 一括取込・JAN 入庫には **`20250321140000_inventory_rpcs.sql`**（RPC）が必要です。
+3. マイグレーションを Supabase に適用する（**いずれか**）。
+   - **推奨（ローカルから一括）**: **Project Settings → Database** の接続 URI を `.env.local` の `DATABASE_URL` に設定し、プロジェクトルートで `npm run db:apply-migrations` を実行する（`supabase/migrations/*.sql` をファイル名順に実行。**未適用の DB のみ**。既存スキーマがあるとエラーになることがあります）。
+   - **手動**: **SQL Editor** で `supabase/migrations/` 内の SQL を**上から順に**実行する。
+   - [Supabase CLI](https://supabase.com/docs/guides/cli) の `supabase db push` 等でも可。  
+   在庫の手動更新・CSV 一括取込・JAN 入庫には **`20250321140000_inventory_rpcs.sql`**（RPC）、注文確定には **`20250321150000_place_order_rpc.sql`** が必要です。
 
 認証・RLS の詳細は `doc/技術仕様書.md` を参照してください。
 
@@ -82,6 +86,7 @@ npm run dev
 | `npm run start` | 本番サーバー（`build` 後） |
 | `npm run lint` | ESLint |
 | `npm run typecheck` | `tsc --noEmit` |
+| `npm run db:apply-migrations` | `DATABASE_URL` 経由で `supabase/migrations/*.sql` を順に実行（未適用 DB 向け） |
 | `npm run test:e2e` | Playwright（E2E-01〜03） |
 
 ## E2E（Playwright）

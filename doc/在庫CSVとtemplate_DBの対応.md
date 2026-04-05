@@ -1,5 +1,12 @@
 # `template_DB.ods` から在庫アップロード用 CSV を作る
 
+| 項目 | 内容 |
+|------|------|
+| 文書名 | 在庫 CSV と template_DB の対応 |
+| 版数 | **1.1** |
+| 更新日 | 2026-04-05 |
+| 参照 | `doc/機能設計書.md` §6、`doc/商品画像_収集と利用方針.md`（画像は CSV 外で管理） |
+
 ## 結論
 
 - **`.ods` をそのままアップロードすることはできません。** アプリが受け付けるのは、所定の**1行目ヘッダー付きの CSV**だけです。
@@ -47,7 +54,7 @@ group_code,group_name,sku_code,jan_code,name_variant,color,size,quantity,reorder
 | JANコード | `jan_code` |
 | 税抜単価 | `unit_price_ex_tax` |
 | 商品ID | `sku_code` にそのまま使うか、`{商品コード}-{サイズ}` など**一意**になるよう命名 |
-| 画像URL | 在庫CSVには無い（無視してよい） |
+| 画像URL | **在庫 CSV には含めない**（テンプレに列があってもインポートでは無視）。**商品画像**は Supabase Storage に置き、DB の `product_skus.image_path` を更新する（**同一親商品の SKU では同一パス**を推奨。`doc/商品画像_収集と利用方針.md`） |
 | 税込単価 | 在庫CSVでは使わない（税抜のみ） |
 
 同じ「商品コード」でサイズ違い（S/M）の行がある場合、**`group_code` と `group_name` を共通**にし、`sku_code` と `jan_code` を行ごとに変えるイメージです。
@@ -84,3 +91,10 @@ group_code,group_name,sku_code,jan_code,name_variant,color,size,quantity,reorder
 
 - 変換例の数行分は `doc/sample_inventory_from_template.csv`（テンプレのコード・JANの並びを簡略化したサンプル）を参照してください。
 - **約200件のダミー在庫CSV**（色・サイズ・親商品を多様化、`MLS-101` 形式のコードと EAN-13 風 JAN）は `doc/dummy_inventory_200.csv`。再生成は `python doc/scripts/generate_dummy_inventory_200.py`。
+
+## 改訂履歴
+
+| 版数 | 日付 | 内容 |
+|------|------|------|
+| 1.0 | （未付番） | 初出からの内容を継続 |
+| 1.1 | 2026-04-05 | メタ情報・改訂履歴を追加。画像列と `image_path`／方針書の関係を明文化 |
